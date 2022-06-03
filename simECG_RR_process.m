@@ -29,7 +29,7 @@ for ii = 1:length(tRR)
     Frn(ii) = Frall(nFr);
 end
 
-v = rand(1,length(tRR))-0.5; %even-sampled white noise
+v = 2*rand(1,length(tRR))-1; %even-sampled white noise with std = 1
 
 %Time-frequency parameters
 w1 = 2*pi*flo/fs; %constant
