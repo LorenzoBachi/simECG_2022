@@ -22,14 +22,15 @@ FrTransient = ones(1,12).*0.2; %Transient period of 60 seconds
 LTransient = sum(1./FrTransient);
 Frall = [FrTransient Fr Fr(end)];
 TFr = cumsum([0 1./Frall(1:end-1)]);
-[tRR] = resamp(Frall', TFr', 1, fs);
+%[tRR] = resamp(Frall', TFr', 1, fs);
+tRR = (TFr:1/fs:TFr(length(Frall)))';
 Frn = []; %even-sampled respiratory signal
 for ii = 1:length(tRR)
     nFr = find( TFr <= tRR(ii),1,'last');
     Frn(ii) = Frall(nFr);
 end
 
-v = 2*rand(1,length(tRR))-1; %even-sampled white noise with std = 1
+v = rand(1,length(tRR))-0.5; %even-sampled white noise
 
 %Time-frequency parameters
 w1 = 2*pi*flo/fs; %constant

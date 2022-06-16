@@ -37,19 +37,11 @@ switch rhythmType
            numABPs = length(find(targets_beats == 3));
            if numABPs > 0
                P_waves_APBs = simECG_generate_multilead_P_waves(numABPs);
-               iAPB = 0;
-               if targets_beats(1) == 3
-                   iAPB = iAPB + 1;
-                   P_waves(:,1,:) = P_waves_APBs(:,iAPB,:);
-               end
-               for n = 2:Nrr 
+               iAPB = 1;
+               for n = 1:Nrr 
                    if targets_beats(n) == 3
-                       if targets_beats(n-1) == 3
-                           P_waves(:,n,:) = P_waves_APBs(:,iAPB,:);
-                       else
-                           iAPB = iAPB + 1;
-                           P_waves(:,n,:) = P_waves_APBs(:,iAPB,:);
-                       end
+                       P_waves(:,n,:) = P_waves_APBs(:,iAPB,:);
+                       iAPB = iAPB + 1;
                    end
                end
            end
@@ -125,7 +117,7 @@ switch rhythmType
                iAPB = 1;
                for n = 1:Nrr 
                    if targets_beats(n) == 3
-                       P_waves(:,n+1,:) = P_waves_APBs(:,iAPB,:);
+                       P_waves(:,n,:) = P_waves_APBs(:,iAPB,:);
                        iAPB = iAPB + 1;
                    end
                end

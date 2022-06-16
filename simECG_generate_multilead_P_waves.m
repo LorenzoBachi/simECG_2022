@@ -46,7 +46,7 @@ bx2 = simECG_random_number(0.5, 0.9); %Cris 03/2022
 % Get parameters for P wave in Frank lead Y
 ky0 = simECG_random_number(0.05, 0.125); %Cris 03/2022 
 ky1 = simECG_random_number(-0.03, 0.03);
-ky2 = 0%simECG_random_number(0, 0.03); 
+ky2 = simECG_random_number(0, 0.03); 
 by0 = simECG_random_number(0.8, 0.9); %Cris 03/2022 
 by1 = simECG_random_number(0.5, 0.9); %Cris 03/2022 
 by2 = simECG_random_number(0.5, 0.9);%Cris 03/2022 
@@ -54,7 +54,7 @@ by2 = simECG_random_number(0.5, 0.9);%Cris 03/2022
 % Get parameters for P wave in Frank lead Z
 kz0 = simECG_random_number(-0.02, 0.02);  
 kz1 = simECG_random_number(-0.02, -0.05);  
-kz2 = 0%simECG_random_number(-0.02, 0); 
+kz2 = simECG_random_number(-0.02, 0); 
 bz0 = simECG_random_number(0.5, 0.9); %Cris 03/2022 
 bz1 = simECG_random_number(0.7, 0.9); %Cris 03/2022 
 bz2 = simECG_random_number(0.6, 0.9); %Cris 03/2022 

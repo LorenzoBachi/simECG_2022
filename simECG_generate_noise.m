@@ -19,6 +19,15 @@ function multileadNoise = simECG_generate_noise(ecgLength, noiseType, noiseRMS, 
 
 disp('Generating noise ...');
 
+noiseLength = 1805556; % Noise length
+if ecgLength < noiseLength
+    noiseStart = randi([1 (noiseLength-ecgLength)]); % take starting point randomly
+else
+    noiseStart = randi([1 noiseLength/2]); %1805556 - cut half of length noise segments
+    cycles = ceil(ecgLength/(noiseLength/2));
+    noiseTemp = [];
+end
+
 switch noiseType
     case 0     % no noise added
         multileadNoise = zeros(15, ecgLength);

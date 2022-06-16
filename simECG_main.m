@@ -15,38 +15,51 @@
 
 % ECG is simulated @1 KHz.
 
-%Last update: CPerez 18/05/2022
+clear;
 
-clc, clear all
-addpath('D:\Doctorado\2.Senales_Simuladas\Simulator_Lund\PAFsim_v2022\')
 %% Initial parameters
 %--> General Parameters
-sigLength = 2*60;   %desired ECG length in seconds;
+sigLength = 3*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
-
-medEpis = 100;      % Median episode length ---> in seconds <----
-stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
-AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
-
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
 realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 
-APBph = 0;         % Number of median APBs per hour
-ARRate = 0.85;       % Rate of atrial runs, a number between 0 and 1. 0: no runs, 1: every APB begins a run.
-% ARDist represents the desired distribution of the atrial runs, in
-% relative weights. If the sum of the weights exceeds 1, they are
-% automatically rescaled in order to have a sum of 1. The first element of
-% the distribution represents the probability weight of a run of TWO APBs.
-% The maximum length of ARDist represents the maximum desidred length of an
-% atrial run minus one (ARDist(1) refers to couplets).
-ARDist = ones(1,49); %1 + (1:49)./20; %ones(1,49); %1./((1:49).^2);
-VPBph = 0;         % Number of median VPBs per hour
+%--> Atrial fibrillation
+medEpis = 100;      % Median episode length > in beats <
+stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
+AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 
+%--> Atrial tachycardia
+APBph = 10;         % Number of APBs per hour
+load('ATDist.mat'); %comment for custom probability distribution
+% ATDist represents the desired distribution of the atrial tachycardia episodes,
+% in relative weights. If the sum of the weights exceeds 1, they are
+% automatically rescaled in order to have a sum of 1. The first element of
+% the distribution represents the probability weight of isolated APBs.
+% The second element of the distribution relates to coupltes, and so on.
+% The maximum length of ATDist represents the maximum desidred length of an
+% atrial tachycardia episode (default: 50)
+ATDist = sqrt(ATDist);%ones(1,50);
+
+% Ventricular premature beats
+VPBph = 10;         % Number of VPBs per hour
+
+% Bigeminy, trigeminy
+BT_p = [0, 0]; % probability of bigeminy and trigeminy
+%Setting both probabilities to zero deactivates the BT state
+BT_medEpis = 20;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = 0;      % Type of noise. 4 - a mixture of all noises; 5 - bw + ma because em has residual ECG; % Type 6 - real EST
-noiseRMS = 0.25;    % Noise level in milivolts. 
+noiseType = 5;      % Type of noise. 
+% 0 - no noise;
+% 1 - motion artifact;
+% 2 - electrode movement
+% 3 - baseline wander;
+% 4 - a mixture of all noises;
+% 5 - bw + ma because em has residual ECG;
+% 6 - real EST.
+noiseRMS = 0.07;    % Noise level in millivolts. 
 
 %--> Exercise stress test parameters %CPerez 03/2022
 ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
@@ -70,41 +83,25 @@ end
 
 % Note: cannot select real atrial activity and synthetic ventricular activity
 
-%% ECG generator 
-%resuldir = 'D:\investigacion\QTadaptation\matlab\simulated_ECGs_QTadapt\';
-clc
+%% ECG generator
 
 arrhythmiaParameters.AFburden = AFburden;
 arrhythmiaParameters.stayInAF = stayInAF;
 arrhythmiaParameters.APBph = APBph;
-arrhythmiaParameters.ARRate = ARRate;
-arrhythmiaParameters.ARDist = ARDist;
+arrhythmiaParameters.ATDist = ATDist;
+arrhythmiaParameters.BT_p = BT_p./(sum(BT_p)+eps);
+arrhythmiaParameters.BT_medEpis = BT_medEpis;
+if arrhythmiaParameters.APBph >0
+    arrhythmiaParameters.ATDist = arrhythmiaParameters.ATDist./ sum(arrhythmiaParameters.ATDist);
+end
 arrhythmiaParameters.VPBph = VPBph;
 
 
 for nr = 1:1
+
 [simECGdata, initialParameters, annotations, ecgParameters] = simECG_generator(sigLength,realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, ecgParameters);
-fprintf('finish!\n')
+fprintf('Simulation completed.\n')
 
-%cd(resuldir)
-fa=1000;
-ecgLength=simECGdata.ecgLength;
-Duration=ecgLength./fa;
-sinal=simECGdata.multileadECG([1,2,7:12],:)';
-
-% ecgnr = 'sim_02_synt';
-% ecgnr = 'sim_Example_nTV';
-% save(['.\Simulated_results\' ecgnr '.mat'], 'simECGdata','sinal','fa','Duration', 'ecgnr','sinal_clean','ecgParameters'); fprintf('saved!\n')
-
-
-% ecgnr = 'sim_02_n1_ECG-LR';
-% ecgnr = 'sim_65_ECG-LR';
-% save(['.\DelayQT_sim\Results\' ecgnr '.mat'], 'simECGdata','sinal','fa','Duration', 'ecgnr', 'sinal_clean'); fprintf('saved!\n')
-
-
-% save(strcat(ecgnr,'.mat'), 'simPAFdata','sinal','fa','Duration', 'ecgnr') 
-% save(['.\Results\sim_' num2str(ns) '.mat'], 'simECGdata','-v7.3')
-%cd ..
 end
 
 
@@ -114,18 +111,19 @@ fibFreqz = initialParameters.fibFreqz;      % Dominant fibrillatory frequency
 % Data
 rr = simECGdata.rr;                         % RR intervals in miliseconds
 multileadECG = simECGdata.multileadECG;     % 15 lead ECG
-multileadVA = simECGdata.multileadVA;       % 15 lead ventricular activity
-multileadAA = simECGdata.multileadAA;       % 15 lead atrial activity
-multileadNoise = simECGdata.multileadNoise; % 15 lead physiological noise
+%multileadVA = simECGdata.multileadVA;       % 15 lead ventricular activity
+%multileadAA = simECGdata.multileadAA;       % 15 lead atrial activity
+%multileadNoise = simECGdata.multileadNoise; % 15 lead physiological noise
 QRSindex = simECGdata.QRSindex;             % QRS index. Shows sample number when R peak occurs
 targets_beats = simECGdata.targets_beats;   % Marks sinus rhythm, AF, premature atrial and premature ventricular beats
 pafBoundaries = simECGdata.pafBoundaries;   % Start and the end of each PAF episode
 pafEpisLength = simECGdata.pafEpisLength;   % Length (in beats) of each PAF episode
 ecgLength = simECGdata.ecgLength;           % ECG length in samples
+state_history = simECGdata.state_history;
 
 %% Plots
 if ishandle(1), close(1); end
-figure(1)
+figure(1);
 ax(1)=subplot(211);
 plot(cumsum(rr)./1000,rr, 'o--');
 xlabel('Time [s]'); ylabel('RR [ms]');
@@ -150,10 +148,10 @@ switch l
         line = ['V',num2str(l-6)];
 end
 ax(2)=subplot(212);
-t=(0:1:length(simECGdata.multileadECG(7,:))-1)./1000;
-plot(t,simECGdata.multileadECG(10,:)');
+t=(0:1:length(multileadECG(7,:))-1)./1000;
+plot(t,multileadECG(l,:)');
 hold on
-plot(cumsum(rr)./1000,simECGdata.multileadECG(l,cumsum(rr))','ro');
+plot(cumsum(rr)./1000,multileadECG(l,cumsum(rr))','ro');
 xlabel('Time [s]'); ylabel(['Lead ', line,' [mV]']);
 xlim([0,sigLength]);
 %axis([135, 145, -0.2, 1]);
@@ -163,17 +161,29 @@ linkaxes(ax,'x');
 set(gcf, 'Position', get(0, 'Screensize'));
 
 if ishandle(2), close(2); end
-figure(2)
-hold on;
-plot(rr);
-plot(targets_beats, 'r');
-hold off;
+figure(2);
+stem(targets_beats, 'r');
 xlabel('Beat number');
 ylabel('Type of beat');
-ylim([0.75 3.25]);
-yticks([1,2,3]); yticklabels({'N','AF','APB'});
+ylim([0.75 4.25]);
+yticks([1,2,3,4]); yticklabels({'N','AF','APB','V'});
 set(gcf, 'Position', get(0, 'Screensize'));
 
+% %% Provisional code for the paper figures
+% clear simECGdata;
+% spacing = 2;
+% if ishandle(3), close(3); end
+% figure(3);
+% hold on;
+% limits = [20, 30]; %seconds
+% idx = round(limits(1)*1000) +1: round(limits(2)*1000);
+% tf = t( idx );
+% plot(tf-limits(1),multileadECG(7,idx)','k');
+% plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k');
+% set(gcf,'units','centimeters','position',[15,15,18,10]);
+% set(gca,'FontName','Times','Fontsize',10);
+% box on;
+% set(gca,'ytick',[-0.5,0,0.5,1.5,2,2.5]); set(gca,'yticklabel',{'-0.5','0','0.5','-0.5','0','0.5'});
 
 %% LEGACY CODE
 % 

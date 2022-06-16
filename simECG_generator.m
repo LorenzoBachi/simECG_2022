@@ -60,7 +60,7 @@ switch onlyRR
         % Generate initial parameters (fibrillatory frequency)
         fibFreqz = simECG_fibrillation_frequency();
         % Generate RR intervals
-        [rr,annTime,annType,annRhythm,targets_beats,pafBoundaries, pafEpisLength, ecgParameters] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
+        [rr,annTime,annType,annRhythm,targets_beats,pafBoundaries, pafEpisLength, ecgParameters,state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
         rr(cumsum(rr)>sigLength)= [];
         rrLength = numel(rr);
         simECGdata.rr = rr;
@@ -96,10 +96,10 @@ switch onlyRR
         % Generate initial parameters (fibrillatory frequency)
         fibFreqz = simECG_fibrillation_frequency();   
         % Generate RR intervals
-        [rrIn,annTime,annType,annRhythm,targets_beats,pafBoundaries, pafEpisLength, ecgParameters] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
+        [rrIn,annTime,annType,annRhythm,targets_beats,pafBoundaries, pafEpisLength, ecgParameters,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
         rrLength = numel(rrIn);
         % Generate multilead ventricular activity
-        [QRSindex, TendIndex,rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, arrhythmiaParameters.AFburden, realVAon, realAAon, realRRon, ecgParameters); %_QTC adde by Alba 19/03
+        [QRSindex, TendIndex,rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, realAAon, realRRon, ecgParameters,state_history); %_QTC adde by Alba 19/03
         % Generate multilead atrial activity
         multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.AFburden, ecgParameters);
         % Generate multilead noise
@@ -117,6 +117,7 @@ switch onlyRR
         simECGdata.targets_beats = targets_beats;
         simECGdata.pafBoundaries = pafBoundaries;
         simECGdata.pafEpisLength = pafEpisLength;
+        simECGdata.state_history = state_history;
         simECGdata.ecgLength = ecgLength';
         simECGdata.Fr = ecgParameters.Fr';
                
