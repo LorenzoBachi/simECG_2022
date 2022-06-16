@@ -1,6 +1,6 @@
 %% ECG SIMULATOR MAIN SCRIPT: USER-DEFINED PARAMETERS, OUTPUT VISUALIZATION
 
-% VERSION: 2022B
+% VERSION: 2022C
 % A contribution to the previous works by
 %     A. Petrėnas et al, 2017: Electrocardiogram modeling duringparoxysmal
 % atrial fibrillation: application to the detection of brief episodes
