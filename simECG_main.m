@@ -13,6 +13,10 @@
 % Cristina Perez, PhD student at Universidad de Zaragoza, Spain,
 % cperez@unizar.es, under the supervision of Leif Sörnmo.
 
+% Hesam Halvaei, PhD student at Lund University, Lund, Sweden
+% hesam.halvaei@bme.lth.se
+
+
 % ECG is simulated @1 KHz.
 
 clear;
