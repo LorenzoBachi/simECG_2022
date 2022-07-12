@@ -47,15 +47,15 @@ load('ATDist.mat'); %comment for custom probability distribution
 ATDist = sqrt(ATDist);%ones(1,50);
 
 % Ventricular premature beats
-VPBph = 10;         % Number of VPBs per hour
+VPBph = 0;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
 BT_p = [0, 0]; % probability of bigeminy and trigeminy
 %Setting both probabilities to zero deactivates the BT state
-BT_medEpis = 20;    % Median episode length (in beats) for bigeminy and trigeminy
+BT_medEpis = 0;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = 5;      % Type of noise. 
+noiseType = 0;      % Type of noise. 
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
