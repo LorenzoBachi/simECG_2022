@@ -17,31 +17,31 @@ teta0 = -pi/2;                  % initial phase of the ECG
 
 
 %% QRS
-Qw = simPAF_gen_rand_num(0.05, 0.08);
-Rw = simPAF_gen_rand_num(0.05, 0.08);
-Sw = simPAF_gen_rand_num(0.05, 0.08);
+Qw = simECG_random_number(0.05, 0.08);
+Rw = simECG_random_number(0.05, 0.08);
+Sw = simECG_random_number(0.05, 0.08);
 
-alphaiQRS.x = [ simPAF_gen_rand_num(-0.4, -0.05)  simPAF_gen_rand_num(0.4, 1.5)     0];
+alphaiQRS.x = [ simECG_random_number(-0.4, -0.05)  simECG_random_number(0.4, 1.5)     0];
 biQRS.x     = [Qw    Rw    Sw];
 tetaiQRS.x  = [-0.1    0    0.1];
 
-alphaiQRS.y = [ 0    simPAF_gen_rand_num(0.1, 0.7)   simPAF_gen_rand_num(-0.3, -0.05)];
+alphaiQRS.y = [ 0    simECG_random_number(0.1, 0.7)   simECG_random_number(-0.3, -0.05)];
 biQRS.y     = [Qw   Rw   Sw];
 tetaiQRS.y  = [-0.1   0   0.1];
 
-alphaiQRS.z = [simPAF_gen_rand_num(-0.4, -0.05)   0  simPAF_gen_rand_num(0.1, 1)];
+alphaiQRS.z = [simECG_random_number(-0.4, -0.05)   0  simECG_random_number(0.1, 1)];
 biQRS.z     = [Qw   Rw  Sw];
 tetaiQRS.z  = [ -0.1   0   0.1];
 
 %% T wave
-Tw = simPAF_gen_rand_num(0.5, 0.7);
+Tw = simECG_random_number(0.5, 0.7);
 
-% Txa = simPAF_gen_rand_num(0.02, 0.12);
-% Tya = simPAF_gen_rand_num(0.01, 0.05);
-% Tza = simPAF_gen_rand_num(-0.02, -0.1);
-Txa = simPAF_gen_rand_num(0.02, 0.08);
-Tya = simPAF_gen_rand_num(0.01, 0.03);
-Tza = simPAF_gen_rand_num(-0.02, -0.06);
+% Txa = simECG_random_number(0.02, 0.12);
+% Tya = simECG_random_number(0.01, 0.05);
+% Tza = simECG_random_number(-0.02, -0.1);
+Txa = simECG_random_number(0.02, 0.08);
+Tya = simECG_random_number(0.01, 0.03);
+Tza = simECG_random_number(-0.02, -0.06);
 
 alphaiT.x = [Txa   2*Txa   3*Txa];
 biT.x     = [Tw     Tw/2    Tw/4];
@@ -86,7 +86,7 @@ else
     phaseZ = pi;
 end
 
-[DIP, ~] = simPAF_dipole_generator(N,fs,F,alphai,bi,tetai,teta0); 
+[DIP, ~] = simECG_dipole_generator(N,fs,F,alphai,bi,tetai,teta0); 
 for n = 1:num
     pqrstFrank(1:3,n,:) = [DIP.x(51:590) ; DIP.y(51:590) ; DIP.z(51:590)]; %default 610, Alba: 6000
 end
