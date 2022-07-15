@@ -42,14 +42,14 @@ if ecgParameters.ESTflag
         bias = 0.05;
         LF = rand(1,5)*2*bias +([0.74 0.82 0.42 0.20 0.30] - bias); %LF for basal, 60, 80, 100, recov for MaxT from Hernando2018
         HF = rand(1,5)*2*bias +([0.36 0.10 0.18 0.44 0.48] - bias);   %HF for basal, 60, 80, 100, recov for MaxT from Hernando2018
-        RR60 = ceil(ecgParameters.Exercise*(0.75 + (0.745-0.785)*rand(1)));
-        RR80 = ceil(ecgParameters.Exercise*(0.75 + (0.87-0.91)*rand(1)));
+        RR60 = ceil(ecgParameters.Exercise*0.6);
+        RR80 = ceil(ecgParameters.Exercise*0.8);
         Plfexercise = [linspace(LF(1),LF(2),RR60), linspace(LF(2),LF(3),(RR80-RR60)),linspace(LF(3),LF(4),(ecgParameters.Exercise-RR80))];
         Phfexercise = [linspace(HF(1),HF(2),RR60), linspace(HF(2),HF(3),(RR80-RR60)),linspace(HF(3),HF(4),(ecgParameters.Exercise-RR80))];
         Plf = [repmat(LF(1),1,sum(1./FrTransient)), repmat(LF(1),1,ecgParameters.Basal), Plfexercise(1:ecgParameters.Exercise), linspace(LF(4),LF(5),ecgParameters.Recovery),repmat(LF(5),1,ecgParameters.Basal2)];
         Phf = [repmat(HF(1),1,sum(1./FrTransient)), repmat(HF(1),1,ecgParameters.Basal), Phfexercise(1:ecgParameters.Exercise), linspace(HF(4),HF(5),ecgParameters.Recovery),repmat(HF(5),1,ecgParameters.Basal2)];     
         lfhfratio = Plf./Phf; %LFHF ratio  
-        [~,lfhfratio] = resamp(lfhfratio', linspace(0,TFr(end-1),numel(lfhfratio))', 1, fs);
+        lfhfratio = interp1(1:length(lfhfratio),lfhfratio',1:length(tRR),'linear','extrap'); %to have the same length as RR
 end
 P2 = 1./lfhfratio;
 

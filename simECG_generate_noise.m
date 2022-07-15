@@ -15,7 +15,8 @@ function multileadNoise = simECG_generate_noise(ecgLength, noiseType, noiseRMS, 
 % 3 - baseline wander
 % 4 - mixture of noises
 % 5 -
-% 6 - Exercise stress test noise (from R. Bailón) %CPerez 03/2022 
+% 6 - Simulated Muscular Noise %CPerez 07/2022 
+% X - Exercise stress test noise (from R. Bailón) %CPerez 03/2022 
 
 disp('Generating noise ...');
 
@@ -91,37 +92,8 @@ switch noiseType
             multileadNoise = noiseTemp(:,1:ecgLength);
         end
         
-    case 6     % Exercise stress test noise %CPerez 04/2022
-        load('DATA_noises_EST_real');
-%         sigNum = randi([1 25])  % Select randomly a stress test noise from 25 possible
-        sigNum = 17
-        noise = simECG_construct_real_EST_noise(EST_real_noise(sigNum).noise); %15 leads
-        noisePeak = EST_real_noise(sigNum).peak;
-        noiseFs = EST_real_noise(sigNum).fs;
-        clear DATA_noises_ST_real
-        
-        %Exercise
-        if noisePeak/noiseFs > ESTParameters.peak
-            noise_e = noise(:,noisePeak-ESTParameters.peak*1e3:noisePeak -1);     
-        else
-            diff = round(ESTParameters.peak*1e3-noisePeak);
-            noiseIni = repmat(noise(:,1:60*noiseFs),1,ceil(diff/(60*noiseFs))); %samples from the begining
-            add_e = noiseIni(:,1:diff); %samples from the begining
-            noise_e = [add_e noise(:,1:noisePeak)];
-        end
-
-        %Recovery
-        if (size(noise,2) - noisePeak)/noiseFs > (ecgLength/1000 - ESTParameters.peak)
-            noise_r = noise(:,noisePeak+1:noisePeak+round(ecgLength - ESTParameters.peak*1e3));     
-        else
-            diff = (ecgLength - ESTParameters.peak*1e3) - length(noise(1,noisePeak+1:end));
-            noiseEnd = repmat(noise(:,size(noise,2)-60*noiseFs+1:size(noise,2)),1,ceil(diff/(60*noiseFs))); %samples belong to the end
-            add_r = noiseEnd(:,1:diff); %samples belong to the end
-            noise_r = [noise(:,noisePeak+1:end) add_r];
-        end
-        
-        %Exercise-Stress-Test noise
-        multileadNoise=[noise_e noise_r].*1e-3; %in mVolts        
+    case 6     %Simulated Muscular Noise
+        [multileadNoise] = simECG_Muscular_Noise(ecgLength);%in mVolts   
 end
 
 if noiseType > 0

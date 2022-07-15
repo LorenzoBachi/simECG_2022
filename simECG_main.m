@@ -19,7 +19,7 @@
 
 % ECG is simulated @1 KHz.
 
-clear;
+clear; clc;
 
 %% Initial parameters
 %--> General Parameters
@@ -55,18 +55,19 @@ BT_p = [0, 0]; % probability of bigeminy and trigeminy
 BT_medEpis = 0;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = 0;      % Type of noise. 
+noiseType = 6;      % Type of noise. 
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
 % 3 - baseline wander;
 % 4 - a mixture of all noises;
 % 5 - bw + ma because em has residual ECG;
-% 6 - real EST.
-noiseRMS = 0.07;    % Noise level in millivolts. 
+% 6 - Simulated Muscular Noise;
+
+noiseRMS = 0.01;    % Noise level in millivolts. 
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = 3*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = 8*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
@@ -88,7 +89,7 @@ end
 % Note: cannot select real atrial activity and synthetic ventricular activity
 
 %% ECG generator
-
+clc
 arrhythmiaParameters.AFburden = AFburden;
 arrhythmiaParameters.stayInAF = stayInAF;
 arrhythmiaParameters.APBph = APBph;
@@ -134,7 +135,7 @@ xlabel('Time [s]'); ylabel('RR [ms]');
 % xlim([0,sigLength]);
 %axis([135, 145, 300, 1300]);
 
-l=2;
+l=11;
 switch l
     case 1
         line = 'I';

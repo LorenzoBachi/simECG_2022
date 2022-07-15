@@ -179,7 +179,7 @@ sN = {'1';'2';'3';'4';'5';'6';'7'};
 goToNS = 1-stayInAF;
 goToAF = (goToNS*AFburden)/(1-AFburden);
 
-p_SR_VPB = VPBph / (60 * hrMean);
+p_SR_VPB = VPBph ./ (60 * hrMean);
 p_AF_VPB = VPBph / (60 * hrMean);
 p_AT_VPB = 0;
 p_AF_AF = stayInAF;
