@@ -28,6 +28,7 @@ onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is 
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
 realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
+ecgParameters.fs = 1000; %sampling frequency
 
 %--> Atrial fibrillation
 medEpis = 100;      % Median episode length > in beats <
