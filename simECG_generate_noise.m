@@ -1,4 +1,4 @@
-function multileadNoise = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ESTParameters)
+function multileadNoise = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ecgParameters)
 %
 % multileadNoise = simECG_generate_noise() returns physiological noises obtained
 % from the MIT-BIH Noise Stress Test Database. The signals of the
@@ -93,7 +93,7 @@ switch noiseType
         end
         
     case 6     %Simulated Muscular Noise
-        [multileadNoise] = simECG_Muscular_Noise(ecgLength);%in mVolts   
+        [multileadNoise] = simECG_Muscular_Noise(ecgLength,ecgParameters);%in mVolts   
 end
 
 if noiseType > 0

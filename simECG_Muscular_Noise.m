@@ -40,7 +40,7 @@ if ecgParameters.ESTflag
     
     constantVar = [constantVar_e, constantVar_r];
 else
-    constantVar = 10; %VER
+    constantVar = min(patternMN.signal,[],2); %take a look! %Cris 07/2022
 end
 
 
