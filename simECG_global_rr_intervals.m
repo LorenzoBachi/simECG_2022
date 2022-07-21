@@ -49,6 +49,7 @@ APBph = arrhythmiaParameters.APBph;
 ATDist = arrhythmiaParameters.ATDist;
 VPBph = arrhythmiaParameters.VPBph;
 BT_p = arrhythmiaParameters.BT_p;
+BT_r = arrhythmiaParameters.BT_r;
 BT_medEpis = arrhythmiaParameters.BT_medEpis;
 % beat codes for annotation production
 beatCodes = ['N','A','V','+']; % please note: if new beat types are added, '+' should always be last
@@ -80,9 +81,9 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
     case 0 % The entire rhythm is SR
         if realRRon == 1 % Use real RR series
             rr_sr = simECG_get_real_RR_intervals(0, rrLength); % sinus rhythm rr series (real)
-            hrMean = (1./diff(rr_sr))*60 ;
+            hrArray = (1./diff(rr_sr))*60 ;
         else % Generate sinus activity with the McSharry spectral model
-            [rr_sr,hrMean,ecgParameters] = simECG_generate_sinus_rhythm(rrLength,ecgParameters); % sinus rhythm rr series
+            [rr_sr,hrArray,ecgParameters] = simECG_generate_sinus_rhythm(rrLength,ecgParameters); % sinus rhythm rr series
 %             rr_sr = rr_sr(1:rrLength);
         end
         
@@ -100,9 +101,9 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
         srLength = rrLength;
         if realRRon == 1 % Use real RR series
             rr_sr = simECG_get_real_RR_intervals(0, srLength); % sinus rhythm rr series (real)
-            hrMean = (1./diff(rr_sr))*60 ;
+            hrArray = (1./diff(rr_sr))*60 ;
         else % Use simulated RR series
-            [rr_sr,hrMean,ecgParameters] = simECG_generate_sinus_rhythm(srLength,ecgParameters); % sinus rhythm rr series
+            [rr_sr,hrArray,ecgParameters] = simECG_generate_sinus_rhythm(srLength,ecgParameters); % sinus rhythm rr series
             sigLength = ceil(ecgParameters.Duration);
 %             rr_sr = rr_sr(1:srLength);
         end
@@ -139,7 +140,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             pos = pos./fa;
             [b,a] = butter(2,0.03); %Fc = 0.03Hz
             hrMeanu = filtfilt(b,a,dHRu);
-            hrMean = interp1(pos, hrMeanu, timebeats);
+            hrArray = interp1(pos, hrMeanu, timebeats);
             ecgParameters.Duration = sum(rr_sr); %in seconds
             
             %Recalculate the exercise peak
@@ -158,12 +159,17 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             sigLengthMs = sigLength * 1000;
             
         else % Use synthetic RR series CPerez 04/2022
-            [rr_sr, hrMean, ecgParameters] = simECG_generate_sinus_rhythm(rrLength, ecgParameters);
+            [rr_sr, hrArray, ecgParameters] = simECG_generate_sinus_rhythm(rrLength, ecgParameters);
             sigLength = fix(ecgParameters.Duration); %in sec
             sigLengthMs = sigLength * 1000; %in msec
         end
         rhythm_states = ones(1,sigLength);
         rr_af = Inf;
+end
+
+% Put HR in a vector to allow compatibility with stress test
+if length(hrArray) ==1
+    hrArray = ones(1,length(rr_sr)+1)*hrArray;
 end
 
 %% Markov chain transition matrix
@@ -179,15 +185,16 @@ sN = {'1';'2';'3';'4';'5';'6';'7'};
 goToNS = 1-stayInAF;
 goToAF = (goToNS*AFburden)/(1-AFburden);
 
-p_SR_VPB = VPBph ./ (60 * hrMean);
-p_AF_VPB = VPBph / (60 * hrMean);
+% new transition probabilities
+p_SR_VPB = VPBph ./ (60 * mean(hrArray));
+p_AF_VPB = VPBph / (60 * mean(hrArray));
 p_AT_VPB = 0;
 p_AF_AF = stayInAF;
 p_SR_AF = goToAF;
 p_AF_SR = 1 - p_AF_VPB - p_AF_AF;
-p_SR_AT = APBph / (60 * hrMean);
+p_SR_AT = APBph / (60 * mean(hrArray));
 p_AT_SR = 1;
-p_SR_BT = (BT_p(1) | BT_p(2))*VPBph / (60 * hrMean);
+p_SR_BT = (BT_p(1) | BT_p(2))*BT_r;
 p_BT_SR = log(2) / BT_medEpis;
 p_SR_SR = 1 - p_SR_AF - p_SR_AT - p_SR_VPB - p_SR_BT;
 
@@ -347,12 +354,12 @@ while t<=sigLengthMs
                     end
                 else
                     % Tachycardia episode begins
-                    bpm_at = ( rand*(2-1.1) + 1.1 ) * hrMean;
+                    bpm_at = ( rand*(2-1.1) + 1.1 ) * hrArray(c_SR);
                     % excessive rates are discarded
                     while bpm_at > 200
-                        bpm_at = ( rand*(2-1.1) + 1.1 ) * hrMean;
+                        bpm_at = ( rand*(2-1.1) + 1.1 ) * hrArray(c_SR);
                     end
-                    beta_at = hrMean / bpm_at;
+                    beta_at = hrArray(c_SR) / bpm_at;
                     % prematurity factor
                     beta_p = 0.55 + rand*0.4;
                     rrtemp = rr_sr(c_SR) * beta_p;

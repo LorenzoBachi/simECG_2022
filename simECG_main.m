@@ -51,7 +51,8 @@ ATDist = sqrt(ATDist);%ones(1,50);
 VPBph = 0;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
-BT_p = [0, 0]; % probability of bigeminy and trigeminy
+BT_r = 0; % rate of bigeminy and trigeminy
+BT_p = [0, 0]; % differential probability of bigeminy vs trigeminy
 %Setting both probabilities to zero deactivates the BT state
 BT_medEpis = 0;    % Median episode length (in beats) for bigeminy and trigeminy
 
@@ -95,6 +96,7 @@ arrhythmiaParameters.AFburden = AFburden;
 arrhythmiaParameters.stayInAF = stayInAF;
 arrhythmiaParameters.APBph = APBph;
 arrhythmiaParameters.ATDist = ATDist;
+arrhythmiaParameters.BT_r = BT_r;
 arrhythmiaParameters.BT_p = BT_p./(sum(BT_p)+eps);
 arrhythmiaParameters.BT_medEpis = BT_medEpis;
 if arrhythmiaParameters.APBph >0
