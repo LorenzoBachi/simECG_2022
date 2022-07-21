@@ -11,7 +11,6 @@ ARp = squeeze(AR_MN_Dictionary(randi([1,25]),:,:));
 fs = ecgParameters.fs;
 
 % 2) AP(1) model to calculate the variance of the MN signal
-clc
 
 v1 = [];
 out_AP1 = [];
@@ -32,10 +31,10 @@ out_AP1 = (out_AP1 - 0)./sqrt(var(v1,[],2)/(1-p^2));%Normalize
 if ecgParameters.ESTflag
     for Li = 1:3 %frank leads
         tNew = linspace(0,ecgParameters.peak,size(patternMN.signal(Li,1:patternMN.peak),2));
-        constantVar_e(Li,:)  = interp1(tNew,patternMN.signal(Li,1:patternMN.peak),(0:ecgParameters.peak*fs-1)./fs);
+        constantVar_e(Li,:)  = interp1(tNew,patternMN.signal(Li,1:patternMN.peak),(0:round(ecgParameters.peak*fs)-1)./fs);
         
         tNew = linspace(ecgParameters.peak,ecgLength/fs,size(patternMN.signal(Li,patternMN.peak+1:end),2));
-        constantVar_r(Li,:)  = interp1(tNew,patternMN.signal(Li,patternMN.peak+1:end),(ecgParameters.peak*fs:ecgLength-1)./fs);
+        constantVar_r(Li,:)  = interp1(tNew,patternMN.signal(Li,patternMN.peak+1:end),(round(ecgParameters.peak*fs):ecgLength-1)./fs);
     end
     
     constantVar = [constantVar_e, constantVar_r];
@@ -45,7 +44,7 @@ end
 
 
 out_AP1 = (constantVar + out_AP1.^2); %variance
-
+out_AP1 = fillmissing(out_AP1,'movmean',5000,2); %due to interp1 to calculate constantVar_e and constantVar_r
 
 % 3)AP(n)model to obtain the desired simulated muscular noise signal
 %-->1) Resample to 200Hz

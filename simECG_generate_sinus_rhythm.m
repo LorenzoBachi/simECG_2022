@@ -25,9 +25,7 @@ switch ecgParameters.ESTflag
         fhiStd = 0.1;
         
         % Respiration pattern
-        ecgParameters.Fr = ones(1,ceil(N*respRate)).*respRate; %number of cycles
-        ecgParameters.Duration = N;
-        
+        ecgParameters.Fr = ones(1,ceil(N*respRate)).*respRate; %number of cycles        
         
     case 1 %EST
         %RR information

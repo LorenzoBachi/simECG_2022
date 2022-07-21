@@ -119,7 +119,7 @@ if ecgParameters.ESTflag
 else
     rrMean = 60/hrmean;
 end
-L = ecgParameters.Duration*fs;
+L = rrMean;
 trrMean = (0:ecgParameters.Duration*fs-1)./fs;
 
 %sum of RRv to obtain the desired RR series --> even-sampled

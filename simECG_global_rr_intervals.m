@@ -159,7 +159,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             sigLengthMs = sigLength * 1000;
             
         else % Use synthetic RR series CPerez 04/2022
-            [rr_sr, hrArray, ecgParameters] = simECG_generate_sinus_rhythm(rrLength, ecgParameters);
+            [rr_sr, hrArray, ecgParameters] = simECG_generate_sinus_rhythm(ecgParameters.Duration, ecgParameters);
             sigLength = fix(ecgParameters.Duration); %in sec
             sigLengthMs = sigLength * 1000; %in msec
         end
