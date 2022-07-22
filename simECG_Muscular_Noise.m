@@ -26,7 +26,7 @@ for ii = 1:N
     out_AP1 = [];
     
     %--> 1) Select the value of the pole and noise distribution
-    p(ii) = rand(1)*(0.9999-0.99) + 0.99;
+    p(ii) = rand(1)*(0.9999-0.99) + 0.99
     b = 1;
     a = [1 -p(ii)]; %according to me
     

@@ -23,7 +23,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 3*60;   %desired ECG length in seconds;
+sigLength = 1*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -176,6 +176,19 @@ ylabel('Type of beat');
 ylim([0.75 4.25]);
 yticks([1,2,3,4]); yticklabels({'N','AF','APB','V'});
 set(gcf, 'Position', get(0, 'Screensize'));
+
+% t=(0:1:length(multileadECG(7,:))-1)./1000;
+% figure
+% for ii = 1:1:3
+%     plot(t,1*ii+multileadECG(l,:)')
+%     hold on
+% end
+% yticks(1*[1:1:3])
+% % yticklabels({'v1','V3','V5','I','III'})
+% yticklabels({'X','Y','Z'})
+% xlabel('Time(s)','FontName', 'Times')
+% set(gca,'fontsize',9,'FontName', 'Times')
+% set(gcf, 'Position', get(0, 'Screensize'));
 
 % %% Provisional code for the paper figures
 % clear simECGdata;
