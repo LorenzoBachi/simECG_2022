@@ -75,6 +75,6 @@ switch ecgParameters.ESTflag
 end
 
 % Compute rr process
-[rr, ecgParameters] = simECG_RR_process(MayerFreq,floStd,fhiStd,lfhfratio,hrmean,rrstd,ecgParameters);
+[rr, ecgParameters] = simECG_RR_process(N, MayerFreq,floStd,fhiStd,lfhfratio,hrmean,rrstd,ecgParameters);
 hrmean = 60./ecgParameters.RRmean;
 end
