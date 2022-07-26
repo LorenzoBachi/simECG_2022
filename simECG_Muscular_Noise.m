@@ -14,42 +14,20 @@ fs = ecgParameters.fs;
 
 v1 = [];
 out_AP1 = [];
+%--> 1) Select the value of the pole and noise distribution
+p(1) = rand(1)*(0.9999-0.999) + 0.999
+% p(1) = 0.9999;
+b = 1-p(1);
+a = [1, -p(1)]; %according to me
 
-v1All = [];
-out_AP1All = [];
+%--> 2) Apply ARX model
+u0 = 99;
+u = (u0 + ones(3, ecgLength)).*b; %time-varying amplitude
+v1 = randn(3, ecgLength); %Frank leads
+v1in = v1 + u; 
+out_AP1 = filter(1,a,v1in')';
+out_AP1(out_AP1<0) = 0; %ReLU
 
-L = 60*fs;
-N = ceil(ecgLength./L);
-
-for ii = 1:N
-    v1 = [];
-    out_AP1 = [];
-    
-    %--> 1) Select the value of the pole and noise distribution
-    p(ii) = rand(1)*(0.9999-0.99) + 0.99
-    b = 1;
-    a = [1 -p(ii)]; %according to me
-    
-    %--> 2) Apply the filter
-    % v1 = gamrnd(shap, scal(1),[size(noise,1),size(noise,2) + 50000]); %shape, scale  size(noise,1)
-    v1 = randn(3, L + 50000); %Frank leads
-    out_AP1 = filter(b,a,v1')';
-    v1(:,1:50000) = [];
-    out_AP1(:,1:50000) = [];
-    % out_AP1 = out_AP1.^2;
-    out_AP1 = (out_AP1 - 0)./sqrt(var(v1,[],2)/(1-p(ii)^2));%Normalize
-    
-    %--> 3) Sum the variance pattern
-    constantVar = 1;
-    out_AP1 = (constantVar + out_AP1).^2; %variance
-    
-    v1All = [v1All v1];
-    out_AP1All = [out_AP1All out_AP1];
-end
-
-v1 = v1All(:,1:ecgLength);
-out_AP1 = out_AP1All(:,1:ecgLength);
-% out_AP1 = fillmissing(out_AP1,'movmean',5000,2); %due to interp1 to calculate constantVar_e and constantVar_r
 
 % 3)AP(n)model to obtain the desired simulated muscular noise signal
 %-->1) Resample to 200Hz
@@ -78,6 +56,8 @@ end
 if size(simuMN_noise,2) > ecgLength
     simuMN_noise = simuMN_noise(:,1:ecgLength);
 end
+
+simuMN_noise = rescale(simuMN_noise,-10,10); %according to the simulator
 
 % Transform to the 15 leads
 %1)Obtain augmented unipolar limb leads
