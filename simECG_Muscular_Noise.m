@@ -14,7 +14,7 @@ fs = ecgParameters.fs;
 
 %--> 1) Select the value of the pole and noise distribution
 p(1) = rand(1)*(0.999-0.999) + 0.999;
-p(1) = 0.999
+p(1) = 0.9995
 b = 1-p(1);
 
 %--> 2) Apply ARX model
@@ -26,10 +26,11 @@ out_APX1_200 = zeros(3,N200);
 
 %Define time-varying amplitude
 if ecgParameters.ESTflag
-    N1 = length(1:ecgParameters.peak*ecgParameters.fs);
-    N2 = length(ecgParameters.peak*ecgParameters.fs:ecgLength);
-    ut = [rescale(1.5.^((1:N1)./(100*fs)),0,100),...
-        rescale(flip(1.5.^((1:N2)./(100*fs))),0,100)];%exponential pattern exercise stress test
+%     N1 = length(1:ecgParameters.peak*ecgParameters.fs);
+%     N2 = length(ecgParameters.peak*ecgParameters.fs:ecgLength);
+%     ut = [rescale(1.5.^((1:N1)./(100*fs)),0,100),...
+%         rescale(flip(1.5.^((1:N2)./(100*fs))),0,100)];%exponential pattern exercise stress test
+    ut = zeros(3, N200);
 else
     ut = zeros(3, N200);
 end
