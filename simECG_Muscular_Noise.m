@@ -1,4 +1,4 @@
-function [simuMN_noise_15] = simECG_Muscular_Noise(ecgLength, ecgParameters)
+function [simuMN_noise_15] = simECG_Muscular_Noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal.
 %
@@ -6,51 +6,51 @@ function [simuMN_noise_15] = simECG_Muscular_Noise(ecgLength, ecgParameters)
 
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal
-load('infoMuscularNoise_EST.mat')
-ARp = squeeze(AR_MN_Dictionary(randi([1,25]),:,:));
+load('DATA_AR_MN_Dictionary.mat')
+ARp = squeeze(AR_MN(randi([1,25]),:,:));
 fs = ecgParameters.fs;
 
 % 2) AP(1) model to calculate the variance of the MN signal
 
-v1 = [];
-out_AP1 = [];
 %--> 1) Select the value of the pole and noise distribution
-p(1) = rand(1)*(0.9995-0.999) + 0.999;
+p(1) = rand(1)*(0.999-0.999) + 0.999;
+p(1) = 0.999
 b = 1-p(1);
-a = [1, -p(1)]; %according to me
 
 %--> 2) Apply ARX model
+u0 = noiseRMS*1e3; %in uV
+N200 = ceil(ecgLength/5);
+
+v1 = [];
+out_APX1_200 = zeros(3,N200);
+
 %Define time-varying amplitude
 if ecgParameters.ESTflag
-    u0 = 10;
     N1 = length(1:ecgParameters.peak*ecgParameters.fs);
     N2 = length(ecgParameters.peak*ecgParameters.fs:ecgLength);
-    u = [rescale(1.5.^((1:N1)./(100*fs)),0,100),...
+    ut = [rescale(1.5.^((1:N1)./(100*fs)),0,100),...
         rescale(flip(1.5.^((1:N2)./(100*fs))),0,100)];%exponential pattern exercise stress test
-    
-    u = (u0 + u).*b; %Frank leads
 else
-    u0 = 99;
-    u = (u0 + ones(3, ecgLength)).*b; %time-varying amplitude
+    ut = zeros(3, N200);
+end
+u = (u0 + ut).*b;
+
+v1 = randn(3, N200).*0.2; %Frank leads
+out_APX1_200(:,1) = u0;
+
+for ii=1:N200-1
+    out_APX1_200(:,ii+1) = p*out_APX1_200(:,ii)+v1(:,ii)+u(:,ii);
 end
 
-v1 = randn(3, ecgLength); %Frank leads
-v1in = v1 + u; 
-out_AP1 = filter(1,a,v1in')';
-out_AP1(out_AP1<0) = 0; %ReLU
+out_APX1_200(out_APX1_200<0) = 0; %ReLU
 
 
 % 3)AP(n)model to obtain the desired simulated muscular noise signal
 %-->1) Resample to 200Hz
-out_AP1_200 = [];
-for ii = 1:3
-    out_AP1_200(ii,:) = resample(out_AP1(ii,:), 200, 1000);
-end
-
-%-->2) Apply AR(n) filter
+%-->2) Apply AR(n) filter 
 v2_200 = [];
-v2_200 = randn(size(out_AP1_200,1),size(out_AP1_200,2));
-v2_200 = v2_200.*out_AP1_200;
+v2_200 = randn(size(out_APX1_200,1),size(out_APX1_200,2));
+v2_200 = v2_200.*out_APX1_200;
 
 simuMN_noise_200 = [];
 for Li = 1:3
@@ -62,13 +62,12 @@ simuMN_noise = [];
 v2 = [];
 for ii = 1:3
     simuMN_noise(ii,:) = resample(simuMN_noise_200(ii,:), 1000, 200);
-    v2(ii,:) = resample(v2_200(ii,:), 1000, 200);
 end
 if size(simuMN_noise,2) > ecgLength
     simuMN_noise = simuMN_noise(:,1:ecgLength);
 end
 
-simuMN_noise = rescale(simuMN_noise,-10,10); %according to the simulator
+simuMN_noise = simuMN_noise.*1e-3; % in mV (accroding to the ECG signal)
 
 % Transform to the 15 leads
 %1)Obtain augmented unipolar limb leads
