@@ -10,20 +10,28 @@ load('DATA_AR_MN_Dictionary.mat')
 ARp = squeeze(AR_MN(randi([1,25]),:,:));
 fs = ecgParameters.fs;
 v1 = [];
+N200 = ceil(ecgLength/5);
 
 %--> 1) Select the value of the pole and time-varying model
 nu = rand(1)*(0.9995-0.990) + 0.990
 
 %--> 2) Apply 1st model and then sum the different signals
 u0 = noiseRMS*1e3; %in uV
-% N1 = length(1:EST_real_noise(nS).peak);
-% N2 = length(EST_real_noise(nS).peak+1:size(noise,2));
-% u = [rescale(1.5.^((1:N1)./(100*fs)),0,100),...
-%     rescale(flip(1.5.^((1:N2)./(100*fs))),0,100)];%exponential pattern exercise stress test
-N200 = ceil(ecgLength/5);
-ut = zeros(3, N200);
 
-stdw = u0*0.5;
+if ecgParameters.ESTflag
+    peak = (ecgParameters.peak*fs)/5;
+    N1 = length(1:peak);
+    N2 = length(peak:N200);
+    ut = [rescale(2.^((1:N1)./(100*fs)),-u0/2,u0),...
+        rescale(flip(2.^((1:N2)./(100*fs))),-u0/2,u0)];%exponential pattern exercise stress test
+    ut = repmat(ut,3,1);
+    stdw = (u0/4)*0.5;
+    
+else
+    ut = zeros(3, N200);
+    stdw = u0*0.5;
+end
+
 sigma_v1 = stdw*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
 v1 = randn(3, N200).*sigma_v1; %Frank leads
 
