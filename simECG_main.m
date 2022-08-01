@@ -23,7 +23,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 1*60;   %desired ECG length in seconds;
+sigLength = 5*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -31,12 +31,12 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 ecgParameters.fs = 1000; %sampling frequency
 
 %--> Atrial fibrillation
-medEpis = 100;      % Median episode length > in beats <
+medEpis = 20;      % Median episode length > in beats <
 stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
 AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 
 %--> Atrial tachycardia
-APBph = 10;         % Number of APBs per hour
+APBph = 0;         % Number of APBs per hour
 load('ATDist.mat'); %comment for custom probability distribution
 % ATDist represents the desired distribution of the atrial tachycardia episodes,
 % in relative weights. If the sum of the weights exceeds 1, they are
@@ -45,19 +45,19 @@ load('ATDist.mat'); %comment for custom probability distribution
 % The second element of the distribution relates to coupltes, and so on.
 % The maximum length of ATDist represents the maximum desidred length of an
 % atrial tachycardia episode (default: 50)
-ATDist = sqrt(ATDist);%ones(1,50);
+%ATDist = %sqrt(ATDist); %ones(1,50);
 
 % Ventricular premature beats
 VPBph = 0;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
-BT_r = 0; % rate of bigeminy and trigeminy
-BT_p = [0, 0]; % differential probability of bigeminy vs trigeminy
+BT_r = 0.1; % rate of bigeminy and trigeminy
+BT_p = [0.5, 0.5]; % differential probability of bigeminy vs trigeminy
 %Setting both probabilities to zero deactivates the BT state
-BT_medEpis = 0;    % Median episode length (in beats) for bigeminy and trigeminy
+BT_medEpis = 20;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = 6;      % Type of noise. 
+noiseType = 5;      % Type of noise. 
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
@@ -66,14 +66,14 @@ noiseType = 6;      % Type of noise.
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 
-noiseRMS = 0.02;    % Noise level in millivolts. 
+noiseRMS = 0.075;    % Noise level in millivolts. 
 
 %--> Exercise stress test parameters %CPerez 03/2022
 ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = 3*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
-    ecgParameters.Exercise = 9*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
-    ecgParameters.Recovery = 4.3*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
+    ecgParameters.Exercise = 8*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
+    ecgParameters.Recovery = 3.3*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
     ecgParameters.Basal2 = 2*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
     
     ecgParameters.Duration = ecgParameters.Basal +ecgParameters.Exercise + ecgParameters.Recovery + ecgParameters.Basal2; %Duration of Exercise Stress Test in seconds. %Cris 04/2022
@@ -135,7 +135,7 @@ figure(1);
 ax(1)=subplot(211);
 plot(cumsum(rr)./1000,rr, 'o--');
 xlabel('Time [s]'); ylabel('RR [ms]');
-% xlim([0,sigLength]);
+xlim([0,sigLength]);
 %axis([135, 145, 300, 1300]);
 
 l=11;
@@ -170,102 +170,67 @@ set(gcf, 'Position', get(0, 'Screensize'));
 
 if ishandle(2), close(2); end
 figure(2);
-stem(targets_beats, 'r');
+stem(cumsum(rr)./1000,targets_beats, 'r');
 xlabel('Beat number');
 ylabel('Type of beat');
 ylim([0.75 4.25]);
 yticks([1,2,3,4]); yticklabels({'N','AF','APB','V'});
+xlim([0,sigLength]);
 set(gcf, 'Position', get(0, 'Screensize'));
 
-% t=(0:1:length(multileadECG(7,:))-1)./1000;
-% figure
-% for ii = 1:1:3
-%     plot(t,1*ii+multileadECG(l,:)')
-%     hold on
-% end
-% yticks(1*[1:1:3])
-% % yticklabels({'v1','V3','V5','I','III'})
-% yticklabels({'X','Y','Z'})
-% xlabel('Time(s)','FontName', 'Times')
-% set(gca,'fontsize',9,'FontName', 'Times')
-% set(gcf, 'Position', get(0, 'Screensize'));
+%% 12 lead plot
+spacing = 3;
+if ishandle(3), close(3); end
+figure(3);
+ax2(1)=subplot(1,2,1);
+hold on;
+for l=1:6
+    plot(t,multileadECG(l,:)+(6-l)*spacing*ones(1,length(t)),'k');
+end
+axis([t(1),t(end),-spacing,6*spacing]);
+yticks([0,spacing,2*spacing,3*spacing,4*spacing,5*spacing]);
+yticklabels({'aVF','aVL','aVR','III','II','I'});
+box on;
 
-% %% Provisional code for the paper figures
+ax2(2)=subplot(1,2,2);
+hold on;
+for l=1:6
+    plot(t,multileadECG(l+6,:)+(6-l)*spacing*ones(1,length(t)),'k');
+end
+axis([t(1),t(end),-spacing,6*spacing]);
+yticks([0,spacing,2*spacing,3*spacing,4*spacing,5*spacing]);
+yticklabels({'V6','V5','V4','V3','V2','V1'});
+box on;
+
+linkaxes(ax2,'x');
+set(gcf, 'Position', get(0, 'Screensize'));
+
+%% Provisional code for the paper figures
 % clear simECGdata;
 % spacing = 2;
-% if ishandle(3), close(3); end
-% figure(3);
+% if ishandle(4), close(4); end
+% figure(4);
 % hold on;
-% limits = [20, 30]; %seconds
-% idx = round(limits(1)*1000) +1: round(limits(2)*1000);
+% limits = [288, 294]; %seconds
+% idx = round(limits(1)*1000) +1: round(limits(2)*1000 +1);
 % tf = t( idx );
-% plot(tf-limits(1),multileadECG(7,idx)','k');
-% plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k');
-% set(gcf,'units','centimeters','position',[15,15,18,10]);
+% lh1 = plot(tf-limits(1),multileadECG(7,idx)','k');
+% lh2 = plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k');
+% axis([tf(1)-limits(1),tf(end)-limits(1),-1.5,3.5]);
+% set(gcf,'units','centimeters','position',[15,15,18,6]);
 % set(gca,'FontName','Times','Fontsize',10);
 % box on;
-% set(gca,'ytick',[-0.5,0,0.5,1.5,2,2.5]); set(gca,'yticklabel',{'-0.5','0','0.5','-0.5','0','0.5'});
+% gridecg2(0.25,0.25);
+% %set(gca,'ytick',[-0.5,0,0.5,1.5,2,2.5]); set(gca,'yticklabel',{'-0.5','0','0.5','-0.5','0','0.5'});
+% set(gca,'ytick',[0,2]); set(gca,'yticklabel',{'V1','II'});
+% set(gca,'TickLength',[0 0])
+% delete(lh1); delete(lh2);
+% lh1 = plot(tf-limits(1),multileadECG(7,idx)','k');
+% lh2 = plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k');
+% paper_example.multileadECG = multileadECG;
+% paper_example.limits = limits;
+%save('.\ECG simulator\2022 07 Paper examples\paper_example5.mat','paper_example');
 
-%% LEGACY CODE
-% 
-% %% PAF detection
-% tarECG = multileadECG(7,:); % Target lead. Must be lead V1
-% refECG = multileadECG(1,:); % Reference lead. Lead I, or V6.
-% if ishandle(3), close(3); end
-% figure(3);
-% hold on;
-% plot(tarECG+3);
-% plot(refECG, 'r');
-% hold off;
-% legend('Target lead', 'Reference lead');
-% 
-% %% ECG preprocessing
-% % Baseline removal < 0.5 Hz
-% b = 0.997781*[1 -2 1];
-% a = [1 -1.9955571 0.99556697];
-% % Noise removal > 40 Hz
-% h  = fdesign.lowpass('N,F3dB', 5, 40, 1000);
-% Hd = design(h, 'butter');
-% tarECG = filtfilt(b,a, tarECG);
-% tarECG = filtfilt(Hd.sosMatrix,Hd.ScaleValues,tarECG);
-% refECG = filtfilt(b,a, refECG);
-% refECG = filtfilt(Hd.sosMatrix,Hd.ScaleValues,refECG);
-
-% f waves extraction using ESN
-% reservoirSize = 100;      
-% QRSdetectionOn = 1;       % QRS detection performed inside the function func_fWaveExtractionESN
-% rIndex = [];
-% [estAA, estVA, rIndex, rrInt, tarECG, refECG, refECGqrs] = func_fWaveExtractionESN(reservoirSize, tarECG, refECG, QRSdetectionOn, rIndex);
-% rr = rrInt/1000;  % RR interval length in seconds
-% 
-% PAF detection
-% [R, ~] = func_LowComplexityDetector(rr, 0.1, 0.725);
-% N = func_noise_index(rIndex,estAA);    
-% [F, P] = func_P_f_waves_index(rIndex,estAA);   %both indexes are updated compared to occult paper
-% [O, Othr] = func_occult_AF_detector(R, P, F, N); % fuzzy based AF detector
-%  
-% figure(1)
-% subplot(2,1,1)
-% hold on
-% plot(tarECG)
-% plot(estAA+mean(tarECG)+0.3, 'r')
-% stairs(QRSindex/4, 2*targets_SR_AF-1, 'b')
-% hold off
-% xlabel('Sample number')
-% ylabel('Amplitude')
-% title('ECG & extracted f-waves')
-% 
-% subplot(2,1,2)
-% hold on
-% plot(O, 'Linewidth', 2, 'Color', [0 1 0])
-% % plot(R, 'r')
-% line([0 length(O)], [0.6 0.6], 'Color', [1 0 0])
-% plot(targets_SR_AF, 'b')
-% hold off
-% ylim([0 1])
-% legend('O')
-% xlabel('RR interval number')
-% title('Detector output')
 
 
 

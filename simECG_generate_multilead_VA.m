@@ -85,25 +85,25 @@ for i = 1:rrLength+1 % Additonal is required to meet exact number of RR interval
     end
 end
 
-%% Ectopic PQRST complexes generation
-% loading ventricular complexes (only real) from the contribution of
-% Alcaraz (2019)
-load('DATA_ventricular_Frank');
-% randomly select one of the 15 possible ectopic beat collections
+%% Ventricular PQRST complexes generation
+% randomly select one of the 15 possible ventricular beat collections
 k = randi([1 15]);
-vpb = DATAventricularFrank(k).pqrst;
-vpb_R = DATAventricularFrank(k).R;
+switch realVAon
+    case 0 % Generate ventricular complexes from the Hermite-logistic
+        %function model
+        load('DATA_ventricular_coefficients');
+        vpb = simECG_generate_XYZ_ventricular_VA(DATAcoefficients(k).fitCoeff,DATAcoefficients(k).J);
+        vpb_R = DATAcoefficients(k).R;
+    case 1 % Load random patch of ventricular PQRST complexes from
+        %Alcaraz's Database
+        load('DATA_ventricular_Real');
+        vpb = DATAventricularReal(k).pqrst;
+        vpb_R = DATAventricularReal(k).R;
+end
 % number of the ventricular beats of the selected collection
 Nvp = length(vpb(1,:,1));
 % number of ventricular beats that are present in the record
 Nbvt = sum(targets_beats==4);
-% amplitude factors for each VPB
-vpb_amp = zeros(1,Nbvt);
-f = (1 + rand*1.2) * ( max(sum(abs(squeeze(mean(pqrst,2))))) / max(sum(abs(squeeze(mean(vpb,2))))) );
-for k = 1:Nbvt
-    vpb_amp(k) =  f * (0.9 + rand*0.2);
-    %(rand*0.25+0.25); %Alcaraz: (randi(10*[0.8 2.5])/10) * sign(1.3+randn(1,1)) ;
-end
 % if necessary, replicate the beats to reach the required number
 if Nbvt > Nvp
     % number of required replications
@@ -113,6 +113,19 @@ if Nbvt > Nvp
         vpb_R = [vpb_R vpb_R];
     end
 end
+% amplitude factors for each VPB
+vpb_amp = zeros(1,Nbvt);
+f0 = (1.5 + 1*rand);
+normf = mean(rms(squeeze(mean(pqrst,2)),2));
+for k = 1:Nbvt
+    f = f0 * ( normf / mean(rms(squeeze(vpb(:,k,:)),2)) );
+    vpb_amp(k) =  f * (0.95 + rand*0.1);
+    %Alcaraz: (randi(10*[0.8 2.5])/10) * sign(1.3+randn(1,1)) ;
+end
+%start from a random beat in the collection
+rp = randperm(length(vpb_R));
+vpb = vpb(:,rp,:);
+vpb_R = vpb_R(rp);
 
 %% Activity generation
 
@@ -120,303 +133,147 @@ pqrstResampled=zeros(numLeads,1);
 ecgSig = [];
 %Load QRST complexes for all leads
 for lead = 1:numLeads %% Changed in v012020
-    AFend = 0;
+    %AFend = 0;
     % counters for supraventricular and ventricular beat numbers
     ks = 0;
     kv = 0;
     
-    switch realAAon
-        case 0 % Synthetic atrial activity
-            % extracting fiducial points location
-            Qind = data.Qind; Rind0 = data.Rind - data.Qind;
-            Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
-            % preparing first beat 
-            if targets_beats(1)~=4
-                % first beat is supraventricular
-                QRSTtempNext = pqrst(lead,1,Qind+1:end);
+    % extracting fiducial points location
+    Qind = data.Qind; Rind0 = data.Rind - data.Qind;
+    Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
+    % preparing first beat
+    if targets_beats(1)~=4
+        % first beat is supraventricular
+        QRSTtempNext = pqrst(lead,1,Qind+1:end);
+        QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
+    else
+        % first beat is ventricular
+        vQRST = squeeze(vpb(lead,1,:))';
+        vQRST = vpb_amp(1) * vQRST;
+        vQRST = simECG_correct_baseline(vQRST);
+        QRSTtempNext = vQRST;
+    end
+    for beatNr = 1:rrLength
+        QRSTtemp = QRSTtempNext;
+        if (beatNr < rrLength)
+            if targets_beats(beatNr+1)~=4
+                QRSTtempNext = pqrst(lead,ks+1,Qind+1:end);
                 QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
             else
-                % first beat is ventricular
-                vQRST = squeeze(vpb(lead,1,:))';
-                vQRST = vpb_amp(1) * vQRST;
+                % ventricular beat
+                vQRST = squeeze(vpb(lead,kv+1,:))';
+                vQRST = vpb_amp(kv+1) * vQRST;
                 vQRST = simECG_correct_baseline(vQRST);
                 QRSTtempNext = vQRST;
             end
-            for beatNr = 1:rrLength
-                QRSTtemp = QRSTtempNext;
-                if (beatNr < rrLength)
-                    if targets_beats(beatNr+1)~=4
-                        QRSTtempNext = pqrst(lead,ks+1,Qind+1:end);
-                        QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                    else
-                        % ventricular beat
-                        vQRST = squeeze(vpb(lead,kv+1,:))';
-                        vQRST = vpb_amp(kv+1) * vQRST;
-                        vQRST = simECG_correct_baseline(vQRST);
-                        QRSTtempNext = vQRST;
-                    end
-                end
-                if targets_beats(beatNr)~=4
-                    % supraventricular beat (either normal or atrial
-                    % ectopic)
-                    ks = ks + 1;
-                    % R wave fiducial point is selected
-                    Rind = Rind0;
-                    % Divide PQRST into two parts
-                    QRST_PS = QRSTtemp(1,1:Sind); % The PQRS part
-                    QRST_ST = QRSTtemp(1,Sind+1:Tind); % The ST part
-                    % Resample T wave according to current RR interval
-                    % Signal is prolonged in order to avoid boundary effects of resampling
-                    QRST_ST  = [QRST_ST(1,1)*ones(1,10) QRST_ST QRST_ST(1,end)*ones(1,10)];
-                    % QRSTtemp  = [QRSTtemp(1,1)*ones(1,20) QRSTtemp QRSTtemp(1,end)*ones(1,20)]; %added by Alba
-                    
-                    % Gradual prolongation of T wave after AF is terminated
-                    if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
-                        if AFend == 1
-                            %                         ST_length =
-                            %                         round(length(QRST_ST)*sqrt((0.3+m*0.1)*rr(beatNr)/1000));
-                            %                         %Original version Andrius
-                            ST_length = qt_hyper(beatNr); % Alba: Hyperbolic model QT/RR regression
-                            m = m + 1;
-                            if m == 7
-                                AFend = 0;
-                            end
-                        else
-                            %                         ST_length =
-                            %                         round(length(QRST_ST)*sqrt(rr(beatNr)/1000)); %v0
-                            %                         Andrius
-                            ST_length = qt_hyper(beatNr); % Alba: Hyperbolic model QT/RR regression
-                        end
-                    else
-                        % ST_length = round(length(QRST_ST)*sqrt(0.35)); %Original code Andrius
-                        %                     ST_length = round(QTc*sqrt(rr(beatNr)/1000)); % Alba: Bazzet's refers to the whole QT interval
-                        ST_length = qt_hyper(beatNr); % Alba: Hyperbolic model QT/RR regression
-                        AFend = 1;
-                        m = 1;
-                    end
-                    %                 QRST_ST = resample(QRST_ST, ST_length+round(20*sqrt(rr(beatNr)/1000))-length(QRST_PS), length(QRST_ST));  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR) %Bazzet's
-                    border = round(10*(ST_length-length(QRST_PS))/(length(QRST_ST)-20));
-                    QRST_ST = resample(QRST_ST, ST_length-length(QRST_PS), length(QRST_ST)-20);  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR)
-                    QRSTc = [QRST_PS QRST_ST(border:end-border)]; % Alba: adapted QRST
-                    %QRSTc = QRST_ST(round(20*sqrt(rr(beatNr)/1000))+1:end-round(20*sqrt(rr(beatNr)/1000))); %Alba: it is not the QTc but the original QT interva before correction
-                    
-                else
-                    % Ventricular beat
-                    % R wave fiducial point
-                    Rind = vpb_R(kv+1);
-                    % in bigeminy / trigeminy, the same VPB si used
-                    if state_history(beatNr)~=4
-                        kv = kv + 1;
-                    else
-                        QRSTtemp = QRSTtemp * (0.9 + rand*0.2);
-                    end
-                    % QT correction for VPBs turned off
-                    QRSTc = QRSTtemp;
-                end
-                
-                % Find TQ length
-                TQlength = rr(beatNr+1) - length(QRSTc);
-                % Interpolate TQ interval only if the space between beats
-                % is enough
-                if  TQlength >= 2
-                    % Interpolate TQ interval
-                    x = [1 TQlength];
-                    xi = 1:1:TQlength;
-                    y = [QRSTc(1,end) QRSTtempNext(1, 1)];
-                    TQ = interp1(x,y,xi,'linear');
-                    QRSTcQ = [ QRSTc, TQ ];
-                else
-                    QRSTcQ = QRSTc;
-                end
-                nn = length(QRSTcQ);
-                
-                % first beat inserted at rr(2)-Rind
-                if beatNr == 1
-                    if lead == 1
-                        rIndex = rr(2);
-                        TendIndex = size(ecgSig,2)+length(QRSTc);
-                    end
-                    ecgSig = zeros(1,rr(2)-Rind+nn+1);
-                    ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
-                else
-                    if lead == 1
-                        %                     QIndex = [QIndex data.];
-                        TendIndex = [TendIndex size(ecgSig,2)+length(QRSTc)];
-                        %rIndex = [rIndex (rIndex(1,end) + TQlength0 + length(QRSTc) - Rind + RindNext)];
-                        rIndex = [rIndex (rIndex(1,end) + rr(beatNr+1) )];
-                    end
-                    % adding extra samples to ecgSig to allow for partial
-                    % compenetration between ecgSig and QRSTcQ (not supported
-                    % in previous versions)
-                    A = length(ecgSig);
-                    B = rr(beatNr+1);
-                    C = A - rIndex(1,beatNr-1);
-                    D = B - C;
-                    E = length(QRSTcQ) - Rind;
-                    if (D+E) > 0
-                        newSamples = zeros(1,D+E);
-                        ecgSig = [ecgSig newSamples];
-                    end
-                    ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
-                end
-            end
+        end
+        if targets_beats(beatNr)~=4
+            % supraventricular beat (either normal or atrial
+            % ectopic)
+            ks = ks + 1;
+            % R wave fiducial point is selected
+            Rind = Rind0;
+            % Divide PQRST into two parts
+            QRST_PS = QRSTtemp(1,1:Sind); % The PQRS part
+            QRST_ST = QRSTtemp(1,Sind+1:Tind); % The ST part
+            % Resample T wave according to current RR interval
+            % Signal is prolonged in order to avoid boundary effects of resampling
+            QRST_ST  = [QRST_ST(1,1)*ones(1,10) QRST_ST QRST_ST(1,end)*ones(1,10)];
+            % QRSTtemp  = [QRSTtemp(1,1)*ones(1,20) QRSTtemp QRSTtemp(1,end)*ones(1,20)]; %added by Alba
             
-        case 1 % Real atrial activity
-            %{
-            if AFburden == 1 % Entire signal is AF
-                rIndex = data.Rind - data.Qind;
-                TendIndex =[];
+            % Alba: Hyperbolic model QT/RR regression
+            ST_length = qt_hyper(beatNr);
+            % Original version by Andrius:
+            % Gradual prolongation of T wave after AF is terminated
+            %if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
+            %    if AFend == 1
+            %        ST_length = round(length(QRST_ST)*sqrt((0.3+m*0.1)*rr(beatNr)/1000));
+            %        m = m + 1;
+            %        if m == 7
+            %            AFend = 0;
+            %        end
+            %    else
+            %        ST_length = round(length(QRST_ST)*sqrt(rr(beatNr)/1000));
+            %    end
+            %else
+            %    ST_length = round(length(QRST_ST)*sqrt(0.35));
+            %    % Alba: Bazzet's refers to the whole QT interval
+            %    %  ST_length = round(QTc*sqrt(rr(beatNr)/1000));
+            %    AFend = 1;
+            %    m = 1;
+            %end
+            %QRST_ST = resample(QRST_ST, ST_length+round(20*sqrt(rr(beatNr)/1000))-length(QRST_PS), length(QRST_ST));  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR) %Bazzet's
+            border = round(10*(ST_length-length(QRST_PS))/(length(QRST_ST)-20));
+            QRST_ST = resample(QRST_ST, ST_length-length(QRST_PS), length(QRST_ST)-20);  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR)
+            QRSTc = [QRST_PS QRST_ST(border:end-border)]; % Alba: adapted QRST
+            %QRSTc = QRST_ST(round(20*sqrt(rr(beatNr)/1000))+1:end-round(20*sqrt(rr(beatNr)/1000))); %Alba: it is not the QTc but the original QT interva before correction
+            
+        else
+            % Ventricular beat
+            % R wave fiducial point
+            Rind = vpb_R(kv+1);
+            % in bigeminy / trigeminy, the same VPB si used
+            if state_history(beatNr)~=4
+                kv = kv + 1;
             else
-                rIndex = data.Rind;
-                TendIndex =[];
+                QRSTtemp = QRSTtemp * (0.9 + rand*0.2);
             end
-            %}
-            for beatNr = 1:rrLength
-                if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
-                    %{
-                        if (targets_beats(beatNr-1) == 1)||(targets_beats(beatNr-1) == 3)
-                            QRSTtemp = pqrst(lead,beatNr,1:end);
-                            QRSTtemp = simECG_correct_baseline(QRSTtemp);
-                            Qind = data.Qind; Rind = data.Rind;
-                            Sind = data.Sind; Tind = data.Tind;
-                        else % targets_SR_AF(beatNr-1) == 2
-                            QRSTtemp = pqrst(lead,beatNr,Qind+1:end);
-                            QRSTtemp = simECG_correct_baseline(QRSTtemp);
-                            Qind = data.Qind; Rind = data.Rind - data.Qind;
-                            Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
-                        end
-                    %}
-                    Qind = data.Qind; Rind = data.Rind;
-                    Sind = data.Sind; Tind = data.Tind;
-                    QRSTtemp = pqrst(lead,beatNr,1:end);
-                    QRSTtemp = simECG_correct_baseline(QRSTtemp);
-                else % targets_SR_AF(beatNr) == 2
-                    %{
-                        if (targets_beats(beatNr-1) == 1)||(targets_beats(beatNr-1) == 3)
-                            QRSTtemp = pqrst(lead,beatNr,Qind+1:end);
-                            QRSTtemp = simECG_correct_baseline(QRSTtemp);
-                            Qind = data.Qind; Rind = data.Rind - data.Qind;
-                            Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
-                        else % targets_SR_AF(beatNr-1) == 2
-                            QRSTtemp = pqrst(lead,beatNr,1:end);
-                            QRSTtemp = simECG_correct_baseline(QRSTtemp);
-                            Qind = data.Qind; Rind = data.Rind;
-                            Sind = data.Sind; Tind = data.Tind;
-                        end
-                    %}
-                    Qind = data.Qind; Rind = data.Rind - data.Qind;
-                    Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
-                    QRSTtemp = pqrst(lead,beatNr,Qind+1:end);
-                    QRSTtemp = simECG_correct_baseline(QRSTtemp);
-                end
-                
-                if beatNr == length(targets_beats)
-                    if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
-                        %RindNext = data.Rind;
-                        QRSTtempNext = pqrst(lead,beatNr,1:end);
-                        QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                    else
-                        %RindNext = data.Rind-data.Qind;
-                        QRSTtempNext = pqrst(lead,beatNr,Qind+1:end);
-                        QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                    end
-                else
-                    if (targets_beats(beatNr+1) == 1)||(targets_beats(beatNr+1) == 3)
-                        if targets_beats(beatNr) == 2
-                            %RindNext = data.Rind-data.Qind;
-                            QRSTtempNext = pqrst(lead,beatNr+1,Qind+1:end);
-                            QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                        else
-                            %RindNext = data.Rind;
-                            QRSTtempNext = pqrst(lead,beatNr+1,1:end);
-                            QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                        end
-                    else
-                        if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
-                            %RindNext = data.Rind;
-                            QRSTtempNext = pqrst(lead,beatNr+1,1:end);
-                            QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                        else
-                            %RindNext = data.Rind-data.Qind;
-                            QRSTtempNext = pqrst(lead,beatNr+1,Qind+1:end);
-                            QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
-                        end
-                    end
-                end
-                
-                % Divide PQRST into two parts
-                QRST_PS = QRSTtemp(1,1:Sind); % The PQRS part
-                QRST_ST = QRSTtemp(1,Sind+1:Tind); % The ST part
-                % Resample T wave according to current RR interval
-                % Signal is prolonged in order to avoid boundary effects of resampling
-                QRST_ST  = [QRST_ST(1,1)*ones(1,20) QRST_ST QRST_ST(1,end)*ones(1,20)];
-                
-                % Gradual prolongation of T wave after AF is terminated
-                if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
-                    if AFend == 1
-                        %                         ST_length = round(length(QRST_ST)*sqrt((0.3+m*0.1)*rr(beatNr)/1000));
-                        %                         m = m + 1;
-                        %                         if m == 7
-                        %                             AFend = 0;
-                        %                         end
-                        ST_length = qt_hyper(beatNr); % Alba: Hyperbolic model QT/RR regression
-                    else
-                        %                         ST_length = round(length(QRST_ST)*sqrt(rr(beatNr)/1000));
-                        ST_length = qt_hyper(beatNr); % Alba: Hyperbolic model QT/RR regression
-                        
-                    end
-                else
-                    %                     ST_length = round(length(QRST_ST)*sqrt(0.35));
-                    ST_length = qt_hyper(beatNr); % Alba: Hyperbolic model QT/RR regression
-                    AFend = 1;
-                    m = 1;
-                end
-                QRST_ST = resample(QRST_ST, ST_length+40, length(QRST_ST));  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR)
-                QRSTc = [QRST_PS QRST_ST(21:end-20)]; % Corrected PQRST
-                % Find TQ length
-                TQlength = rr(beatNr+1) - length(QRSTc); % + Rind - RindNext;
-                % Protect against the error of to low heart rate
-                if  TQlength < 2
-                    TQlength = 2;
-                end
-                % Interpolate TQ interval
-                x = [1 TQlength];
-                xi = 1:1:TQlength;
-                y = [QRSTc(1,end) QRSTtempNext(1, 1)];
-                TQ = interp1(x,y,xi,'linear');
-                QRSTcQ = [ QRSTc TQ ]; % Lorenzo
-                nn = length(QRSTcQ);
-                
-                % first beat inserted at rr(2)-Rind
-                if beatNr == 1
-                    if lead == 1
-                        rIndex = rr(2);
-                        TendIndex = size(ecgSig,2)+length(QRSTc);
-                    end
-                    ecgSig = zeros(1,rr(2)-Rind+nn+1);
-                    ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
-                else
-                    if lead == 1
-                        %                     QIndex = [QIndex data.];
-                        TendIndex = [TendIndex size(ecgSig,2)+length(QRSTc)];
-                        %rIndex = [rIndex (rIndex(1,end) + TQlength0 + length(QRSTc) - Rind + RindNext)];
-                        rIndex = [rIndex (rIndex(1,end) + rr(beatNr+1) )];
-                    end
-                    % adding extra samples to ecgSig to allow for partial
-                    % compenetration between ecgSig and QRSTcQ (not supported
-                    % in previous versions)
-                    A = length(ecgSig);
-                    B = rr(beatNr+1);
-                    C = A - rIndex(1,beatNr-1);
-                    D = B - C;
-                    E = length(QRSTcQ) - Rind;
-                    if (D+E) > 0
-                        newSamples = zeros(1,D+E);
-                        ecgSig = [ecgSig newSamples];
-                    end
-                    ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
-                end
+            % QT correction for VPBs turned off
+            QRSTc = QRSTtemp;
+        end
+        
+        % Find TQ length
+        TQlength = rr(beatNr+1) - length(QRSTc);
+        % Interpolate TQ interval only if the space between beats
+        % is enough
+        if  TQlength >= 2
+            % Interpolate TQ interval
+            x = [1 TQlength];
+            xi = 1:1:TQlength;
+            y = [QRSTc(1,end) QRSTtempNext(1, 1)];
+            TQ = interp1(x,y,xi,'linear');
+            QRSTcQ = [ QRSTc, TQ ];
+        else
+            QRSTcQ = QRSTc;
+        end
+        nn = length(QRSTcQ);
+        
+        % first beat inserted at rr(2)-Rind
+        if beatNr == 1
+            if lead == 1
+                rIndex = rr(2);
+                TendIndex = size(ecgSig,2)+length(QRSTc);
             end
+            ecgSig = zeros(1,rr(2)-Rind+nn+1);
+            ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
+        else
+            if lead == 1
+                %                     QIndex = [QIndex data.];
+                TendIndex = [TendIndex size(ecgSig,2)+length(QRSTc)];
+                %rIndex = [rIndex (rIndex(1,end) + TQlength0 + length(QRSTc) - Rind + RindNext)];
+                rIndex = [rIndex (rIndex(1,end) + rr(beatNr+1) )];
+            end
+            % adding extra samples to ecgSig to allow for partial
+            % superposition between ecgSig and QRSTcQ (not supported
+            % in previous versions)
+            A = length(ecgSig);
+            B = rr(beatNr+1);
+            C = A - rIndex(beatNr-1);
+            D = B - C;
+            E = length(QRSTcQ) - Rind;
+            if (D+E) > 0
+                newSamples = zeros(1,D+E);
+                ecgSig = [ecgSig newSamples];
+                ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
+            else
+                %beat should be place a bit before end of ecgSig
+                d = D+E;
+                ecgSig(end-nn+d+1:end+d) = ecgSig(end-nn+d+1:end+d) + QRSTcQ;
+            end
+            if ecgSig(rIndex(beatNr))<0.5
+                debug = 1;
+            end
+        end
     end
     
     nn = length(ecgSig);
@@ -436,43 +293,48 @@ ecgLength = length(pqrstResampled(1,:));
 T = ecgLength/Fs;
 Zr = [5 5 5]; % Maximum angular variation around X,Y,Z axis
 
-if ~realRRon %CPerez 05/2022
+switch realVAon %%
+    case 0
+        %CPerez 05/2022
         %Include respiration
         [Q] = simECG_rotation_angles_XYZ_v2( ecgParameters.Fr, T, Fs, Zr, ecgParameters);
-
+        
         for t = 1 : ecgLength
             pqrstResampled(:,t) = Q(:,:,t)*pqrstResampled(:,t);
         end
-end     
+        
+        % Dower Transformation for synthetic PQRST complexes
+        %Dower transform
+        D = [
+            -0.515  0.157   -0.917;
+            0.044  0.164   -1.387;
+            0.882  0.098   -1.277;
+            1.213  0.127   -0.601;
+            1.125  0.127   -0.086;
+            0.831  0.076    0.230;
+            0.632 -0.235    0.059;
+            0.235  1.066   -0.132];
+        
+        pqrst_v1_v6_I_II = D*pqrstResampled;
+        
+        multileadVA(1:8,:) = pqrst_v1_v6_I_II(1:8,:); % V1, V2, V3, V4, V5, V6, I, II,
+        multileadVA(9,:) = pqrst_v1_v6_I_II(8,:) - pqrst_v1_v6_I_II(7,:);     % III
+        multileadVA(10,:) = -(pqrst_v1_v6_I_II(7,:) + pqrst_v1_v6_I_II(8,:))/2; % aVR
+        multileadVA(11,:) =  pqrst_v1_v6_I_II(7,:) - pqrst_v1_v6_I_II(8,:)/2;   % aVL
+        multileadVA(12,:) =  pqrst_v1_v6_I_II(8,:) - pqrst_v1_v6_I_II(7,:)/2;   % aVF
+        
+        multileadVA(13,:) = pqrstResampled(1,:); % X
+        multileadVA(14,:) = pqrstResampled(2,:); % Y
+        multileadVA(15,:) = pqrstResampled(3,:); % Z
+        aux = multileadVA;
+        multileadVA(1:6,:) = multileadVA(7:12,:);
+        multileadVA(7:12,:) = aux(1:6,:);
+        
+    case 1 % 12-lead ECG was available
+        multileadVA = pqrstResampled;
+        
+end
 
-% Dower Transformation for synthetic PQRST complexes
-%Dower transform
-D = [
-    -0.515  0.157   -0.917;
-    0.044  0.164   -1.387;
-    0.882  0.098   -1.277;
-    1.213  0.127   -0.601;
-    1.125  0.127   -0.086;
-    0.831  0.076    0.230;
-    0.632 -0.235    0.059;
-    0.235  1.066   -0.132];
-
-
-
-pqrst_v1_v6_I_II = D*pqrstResampled;
-
-multileadVA(1:8,:) = pqrst_v1_v6_I_II(1:8,:); % V1, V2, V3, V4, V5, V6, I, II,
-multileadVA(9,:) = pqrst_v1_v6_I_II(8,:) - pqrst_v1_v6_I_II(7,:);     % III
-multileadVA(10,:) = -(pqrst_v1_v6_I_II(7,:) + pqrst_v1_v6_I_II(8,:))/2; % aVR
-multileadVA(11,:) =  pqrst_v1_v6_I_II(7,:) - pqrst_v1_v6_I_II(8,:)/2;   % aVL
-multileadVA(12,:) =  pqrst_v1_v6_I_II(8,:) - pqrst_v1_v6_I_II(7,:)/2;   % aVF
-
-multileadVA(13,:) = pqrstResampled(1,:); % X
-multileadVA(14,:) = pqrstResampled(2,:); % Y
-multileadVA(15,:) = pqrstResampled(3,:); % Z
-aux = multileadVA;
-multileadVA(1:6,:) = multileadVA(7:12,:);
-multileadVA(7:12,:) = aux(1:6,:);
 
 
 end

@@ -109,7 +109,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
         end
         
         % Generate atrial fibrillation pacing activity
-        afLength = round(AFBurden*rrLength);
+        afLength = round(AFburden*rrLength);
         if realRRon == 1 % Use real RR series
             rr_af = simECG_get_real_RR_intervals(1, afLength);  %atrial fibrillation rr series
         else
@@ -159,7 +159,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             sigLengthMs = sigLength * 1000;
             
         else % Use synthetic RR series CPerez 04/2022
-            [rr_sr, hrArray, ecgParameters] = simECG_generate_sinus_rhythm(ecgParameters.Duration, ecgParameters);
+            [rr_sr, hrArray, ecgParameters] = simECG_generate_sinus_rhythm(rrLength, ecgParameters);
             sigLength = fix(ecgParameters.Duration); %in sec
             sigLengthMs = sigLength * 1000; %in msec
         end
@@ -195,7 +195,7 @@ p_AF_SR = 1 - p_AF_VPB - p_AF_AF;
 p_SR_AT = APBph / (60 * mean(hrArray));
 p_AT_SR = 1;
 p_SR_BT = (BT_p(1) | BT_p(2))*BT_r;
-p_BT_SR = log(2) / BT_medEpis;
+p_BT_SR = log(2) / (BT_medEpis/((BT_p(1)*2) + (BT_p(2)*3))); %BT_medEpis is divided by the average bigeminy/trigeminy single cycle duration
 p_SR_SR = 1 - p_SR_AF - p_SR_AT - p_SR_VPB - p_SR_BT;
 
 transM = zeros(7);
@@ -232,7 +232,7 @@ state_history = zeros(1,rrLength);
 k = 0;
 % annotation vectors initialization
 annTime = zeros(1,2*rrLength);
-annBeats = zeros(1,2*rrLength);
+annBeats = char(zeros(1,2*rrLength));
 annRhythm = cell(1,2*rrLength);
 kann = 0;
 % rhythm check, used to annotate rhythm changes
@@ -542,7 +542,7 @@ while t<=sigLengthMs
             beta_p = 0.55 + rand*0.4;
             % VPBs should not happen too close to other beats in AF
             rrtemp = rr_af(c_AF) * beta_p;
-            while rrtemp < 250
+            while rrtemp < 0.250
                 beta_p = 0.55 + rand*0.4;
                 rrtemp = rr_af(c_AF) * beta_p;
             end
@@ -550,8 +550,6 @@ while t<=sigLengthMs
             rr(k) = rrtemp;
             % update time counter
             t = t + round(rr(k)*1000);
-            % afp series is adjusted
-            afp(c_AF:end) = afp(c_AF:end) + t-afp(c_AF);
             % beat annotation
             kann=kann+1;
             annTime(kann,1) = round(t);

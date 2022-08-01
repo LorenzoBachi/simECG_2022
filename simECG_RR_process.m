@@ -1,4 +1,4 @@
-function [rr, ecgParameters] = simECG_RR_process(N, flo, flostd, fhistd, lfhfratio, hrmean, rrstd,ecgParameters)
+function [rr, ecgParameters] = simECG_RR_process(flo, flostd, fhistd, lfhfratio, hrmean, rrstd,ecgParameters)
 %
 % rr = simECG_RR_process() returns sinus rhythm RR intervals. RR intervals
 % are ghenerated according to the principle reported in the paper by McSharry P, 
@@ -119,12 +119,8 @@ if ecgParameters.ESTflag
 else
     rrMean = 60/hrmean;
 end
-if ecgParameters.ESTflag
-    L = rrMean;
-else
-    L = numel(x);
-end
-trrMean = (0:N*fs-1)./fs;
+L = ecgParameters.Duration*fs;
+trrMean = (0:ecgParameters.Duration*fs-1)./fs;
 
 %sum of RRv to obtain the desired RR series --> even-sampled
 ecgParameters.RRmean = rrMean;
@@ -135,7 +131,7 @@ rrSeries = rrMean + x(1:L).*ratio;
 rr = [];
 p = 1;
 pos = p;
-while sum(rr) <= N-5 %bias of 5 seconds because Fr signal has to be always larger
+while sum(rr) <= ecgParameters.Duration-5 %bias of 5 seconds because Fr signal has to be always larger
     rr = [rr rrSeries(p)];
     p = find(trrMean>=sum(rr),1);
     pos = [pos p];

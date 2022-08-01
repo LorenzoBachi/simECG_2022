@@ -33,7 +33,7 @@ switch rhythmType
            Nrr = length(targets_beats);
            P_waves = simECG_generate_multilead_P_waves(Nrr); 
            
-           % Replace P waves during ectopic beats
+           % Replace P waves during atrial ectopic beats
            numABPs = length(find(targets_beats == 3));
            if numABPs > 0
                P_waves_APBs = simECG_generate_multilead_P_waves(numABPs);
@@ -51,33 +51,36 @@ switch rhythmType
            RR = diff(QRSindex./Fs); %seconds
            QR = 50;
            for p_num = 2:Nrr
-               bias = 0;
-               if ~isfield(ecgParameters,'peak') || (QRSindex(p_num) <= ecgParameters.peak*1e3) %Exercise or normal
-                   if RR(p_num-1) < 0.520 %Change point
-                       PQ = round(152 + 358*(RR(p_num-1)-0.520));%-34.53 + 361.21*RR
-                   else
-                       PQ = randi([140 160],1); %constant 152
+               % avoid placing P waves for ventricular beats %Lorenzo
+               if targets_beats(p_num) ~= 4
+                   bias = 0;
+                   if ~isfield(ecgParameters,'peak') || (QRSindex(p_num) <= ecgParameters.peak*1e3) %Exercise or normal
+                       if RR(p_num-1) < 0.520 %Change point
+                           PQ = round(152 + 358*(RR(p_num-1)-0.520));%-34.53 + 361.21*RR
+                       else
+                           PQ = randi([140 160],1); %constant 152
+                       end
                    end
-               end
-               
-               if isfield(ecgParameters,'peak') && QRSindex(p_num) > ecgParameters.peak*1e3 %Recovery
-                   if RR(p_num-1) < 0.430 %Change point
-                       PQ = round(-65 + 470*RR(p_num-1)); %-65.26 + 470.24*RR
-                   else
-                       PQ = randi([130 150],1); %constant 139
+                   
+                   if isfield(ecgParameters,'peak') && QRSindex(p_num) > ecgParameters.peak*1e3 %Recovery
+                       if RR(p_num-1) < 0.430 %Change point
+                           PQ = round(-65 + 470*RR(p_num-1)); %-65.26 + 470.24*RR
+                       else
+                           PQ = randi([130 150],1); %constant 139
+                       end
                    end
+                   
+                   lenP = length(QRSindex(p_num)-(PQ + QR -1):QRSindex(p_num)-QR);
+                   bias = lenP - size(P_waves,3);
+                   if bias < 0
+                       multileadAA(:, QRSindex(p_num)-(PQ + QR -1 -bias):QRSindex(p_num)- QR) = P_waves(:,p_num,:);
+                   else
+                       multileadAA(:, QRSindex(p_num)-(PQ + QR -1):QRSindex(p_num)- (QR + bias)) = P_waves(:,p_num,:);
+                   end
+                   %                else
+                   %                    multileadAA(:, QRSindex(p_num)-249:QRSindex(p_num)-100) = P_waves(:,p_num,:);
+                   %                end
                end
-               
-               lenP = length(QRSindex(p_num)-(PQ + QR -1):QRSindex(p_num)-QR);
-               bias = lenP - size(P_waves,3);
-               if bias < 0
-                   multileadAA(:, QRSindex(p_num)-(PQ + QR -1 -bias):QRSindex(p_num)- QR) = P_waves(:,p_num,:);
-               else
-                   multileadAA(:, QRSindex(p_num)-(PQ + QR -1):QRSindex(p_num)- (QR + bias)) = P_waves(:,p_num,:);
-               end
-               %                else
-               %                    multileadAA(:, QRSindex(p_num)-249:QRSindex(p_num)-100) = P_waves(:,p_num,:);
-               %                end
            end
        end   
        
@@ -110,7 +113,7 @@ switch rhythmType
         Nrr = length(targets_beats);
         if realAAon == 0  % Synthetic atrial activity is prefered
            P_waves = simECG_generate_multilead_P_waves(Nrr); 
-           % Replace P waves during ectopic beats
+           % Replace P waves during atrial ectopic beats
            numABPs = length(find(targets_beats == 3));
            if numABPs > 0
                P_waves_APBs = simECG_generate_multilead_P_waves(numABPs);
@@ -122,15 +125,49 @@ switch rhythmType
                    end
                end
            end
-           % Generate f waves
-           f_waves = simECG_generate_multilead_f_waves(fibFreqz, ecgLength);
+           % Insert P waves% CPerez 03/2022
+           Fs = 1000; 
+           RR = diff(QRSindex./Fs); %seconds
+           QR = 50;
            % Insert P waves
            for p_num = 2:Nrr
-               multileadAA(:, QRSindex(p_num)-249:QRSindex(p_num)-100) = P_waves(:,p_num,:);  
+               % avoid placing P waves for ventricular beats %Lorenzo
+               if targets_beats(p_num) ~= 4
+                   bias = 0;
+                   if ~isfield(ecgParameters,'peak') || (QRSindex(p_num) <= ecgParameters.peak*1e3) %Exercise or normal
+                       if RR(p_num-1) < 0.520 %Change point
+                           PQ = round(152 + 358*(RR(p_num-1)-0.520));%-34.53 + 361.21*RR
+                       else
+                           PQ = randi([140 160],1); %constant 152
+                       end
+                   end
+                   
+                   if isfield(ecgParameters,'peak') && QRSindex(p_num) > ecgParameters.peak*1e3 %Recovery
+                       if RR(p_num-1) < 0.430 %Change point
+                           PQ = round(-65 + 470*RR(p_num-1)); %-65.26 + 470.24*RR
+                       else
+                           PQ = randi([130 150],1); %constant 139
+                       end
+                   end
+                   
+                   lenP = length(QRSindex(p_num)-(PQ + QR -1):QRSindex(p_num)-QR);
+                   bias = lenP - size(P_waves,3);
+                   if bias < 0
+                       multileadAA(:, QRSindex(p_num)-(PQ + QR -1 -bias):QRSindex(p_num)- QR) = P_waves(:,p_num,:);
+                   else
+                       multileadAA(:, QRSindex(p_num)-(PQ + QR -1):QRSindex(p_num)- (QR + bias)) = P_waves(:,p_num,:);
+                   end
+                   %                else
+                   %                    multileadAA(:, QRSindex(p_num)-249:QRSindex(p_num)-100) = P_waves(:,p_num,:);
+                   %                end
+               end
            end
+           % Generate f waves
+           f_waves = simECG_generate_multilead_f_waves(fibFreqz, ecgLength);
            % Insert f waves
            for p_num = 2:Nrr
-               if targets_beats(p_num) == 2
+               if (targets_beats(p_num) == 2) ||...
+                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2))
                    praIndex = QRSindex(p_num);
                    while ( targets_beats(p_num) == 2 ) && ( p_num < Nrr )
                       p_num = p_num + 1;
@@ -168,7 +205,7 @@ switch rhythmType
                         temp=1;
                     end
                     pabIndex = QRSindex(p_num);
-                    multileadAA(:, praIndex:pabIndex) = multileadfWaves(:,praIndex:pabIndex); 
+                    multileadAA(:, praIndex:pabIndex) = multileadfWaves(:,praIndex:pabIndex);
                 end
             end
             

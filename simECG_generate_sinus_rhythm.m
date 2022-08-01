@@ -25,7 +25,9 @@ switch ecgParameters.ESTflag
         fhiStd = 0.1;
         
         % Respiration pattern
-        ecgParameters.Fr = ones(1,ceil(N*respRate)).*respRate; %number of cycles        
+        ecgParameters.Fr = ones(1,ceil(N*respRate)).*respRate; %number of cycles
+        ecgParameters.Duration = N;
+        
         
     case 1 %EST
         %RR information
@@ -75,6 +77,6 @@ switch ecgParameters.ESTflag
 end
 
 % Compute rr process
-[rr, ecgParameters] = simECG_RR_process(N, MayerFreq,floStd,fhiStd,lfhfratio,hrmean,rrstd,ecgParameters);
+[rr, ecgParameters] = simECG_RR_process(MayerFreq,floStd,fhiStd,lfhfratio,hrmean,rrstd,ecgParameters);
 hrmean = 60./ecgParameters.RRmean;
 end

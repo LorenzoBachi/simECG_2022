@@ -93,10 +93,10 @@ switch noiseType
         end
         
     case 6     %Simulated Muscular Noise
-        [multileadNoise] = simECG_Muscular_Noise(ecgLength,ecgParameters, noiseRMS);%in mVolts   
+        [multileadNoise] = simECG_Muscular_Noise(ecgLength,ecgParameters);%in mVolts   
 end
 
-if noiseType > 0 && noiseType ~= 6
+if noiseType > 0
     % Adjust to desired noise RMS value
     for i = 1:15
         multileadNoise(i,:) = noiseRMS*(multileadNoise(i,:)/std(multileadNoise(i,:)));
