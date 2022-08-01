@@ -1,4 +1,4 @@
-function [simuMN_noise_15] = simECG_Muscular_Noise(ecgLength, ecgParameters)
+function [simuMN_15] = simECG_Muscular_Noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal.
 %
@@ -6,81 +6,65 @@ function [simuMN_noise_15] = simECG_Muscular_Noise(ecgLength, ecgParameters)
 
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal
-load('infoMuscularNoise_EST.mat')
-ARp = squeeze(AR_MN_Dictionary(randi([1,25]),:,:));
+load('DATA_AR_MN_Dictionary.mat')
+ARp = squeeze(AR_MN(randi([1,25]),:,:));
 fs = ecgParameters.fs;
-
-% 2) AP(1) model to calculate the variance of the MN signal
-clc
-
 v1 = [];
-out_AP1 = [];
 
-%--> 1) Select the value of the pole and noise distribution
-p = rand(1)*(0.9999-0.999) + 0.999;
-b = 1;
-a = [1 -p]; %according to me
+%--> 1) Select the value of the pole and time-varying model
+nu = rand(1)*(0.9995-0.990) + 0.990
 
-%--> 2) Apply the filter
-v1 = randn(3, ecgLength + 50000); %Frank leads
-out_AP1 = filter(b,a,v1')';
-v1(:,1:50000) = [];
-out_AP1(:,1:50000) = [];
+%--> 2) Apply 1st model and then sum the different signals
+u0 = noiseRMS*1e3; %in uV
+% N1 = length(1:EST_real_noise(nS).peak);
+% N2 = length(EST_real_noise(nS).peak+1:size(noise,2));
+% u = [rescale(1.5.^((1:N1)./(100*fs)),0,100),...
+%     rescale(flip(1.5.^((1:N2)./(100*fs))),0,100)];%exponential pattern exercise stress test
+N200 = ceil(ecgLength/5);
+ut = zeros(3, N200);
 
-out_AP1 = (out_AP1 - 0)./sqrt(var(v1,[],2)/(1-p^2));%Normalize
+stdw = u0*0.5;
+sigma_v1 = stdw*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
+v1 = randn(3, N200).*sigma_v1; %Frank leads
 
-if ecgParameters.ESTflag
-    for Li = 1:3 %frank leads
-        tNew = linspace(0,ecgParameters.peak,size(patternMN.signal(Li,1:patternMN.peak),2));
-        constantVar_e(Li,:)  = interp1(tNew,patternMN.signal(Li,1:patternMN.peak),(0:ecgParameters.peak*fs-1)./fs);
-        
-        tNew = linspace(ecgParameters.peak,ecgLength/fs,size(patternMN.signal(Li,patternMN.peak+1:end),2));
-        constantVar_r(Li,:)  = interp1(tNew,patternMN.signal(Li,patternMN.peak+1:end),(ecgParameters.peak*fs:ecgLength-1)./fs);
-    end
-    
-    constantVar = [constantVar_e, constantVar_r];
-else
-    constantVar = min(patternMN.signal,[],2); %take a look! %Cris 07/2022
+out_1st_200 = zeros(3,N200);
+
+for ii=1:N200-1
+    out_1st_200(:,ii+1) = nu*out_1st_200(:,ii)+v1(:,ii);
 end
 
+Allout_1st_200 = max(0,out_1st_200 + u0 + ut); %all sum and ReLU
 
-out_AP1 = (constantVar + out_AP1.^2); %variance
 
-
-% 3)AP(n)model to obtain the desired simulated muscular noise signal
-%-->1) Resample to 200Hz
-out_AP1_200 = [];
-for ii = 1:3
-    out_AP1_200(ii,:) = resample(out_AP1(ii,:), 200, 1000);
-end
-
-%-->2) Apply AR(n) filter
+% --> AR filter
 v2_200 = [];
-v2_200 = randn(size(out_AP1_200,1),size(out_AP1_200,2));
-v2_200 = v2_200.*out_AP1_200;
+v2_200 = randn(size(Allout_1st_200,1),size(Allout_1st_200,2));
+v2_200 = normalize(v2_200','range',[-1 1])';
+v2_200 = v2_200.*Allout_1st_200;
 
-simuMN_noise_200 = [];
+simuMN_200 = [];
 for Li = 1:3
-    simuMN_noise_200(Li,:) = filter(1,ARp(:,Li),v2_200(Li,:)')';
+    simuMN_200(Li,:) = filter(1,ARp(:,Li),v2_200(Li,:)')';
 end
 
-%-->3) Resample to 1000Hz
-simuMN_noise = [];
+% --> Resample to 1000Hz
+simuMN = [];
 v2 = [];
 for ii = 1:3
-    simuMN_noise(ii,:) = resample(simuMN_noise_200(ii,:), 1000, 200);
-    v2(ii,:) = resample(v2_200(ii,:), 1000, 200);
+    simuMN(ii,:) = resample(simuMN_200(ii,:), 1000, 200);
 end
-if size(simuMN_noise,2) > ecgLength
-    simuMN_noise = simuMN_noise(:,1:ecgLength);
+if size(simuMN,2) > ecgLength
+     simuMN = simuMN(:,1:ecgLength);
 end
+
+simuMN = simuMN.*1e-3; %inmV
 
 % Transform to the 15 leads
 %1)Obtain augmented unipolar limb leads
-simuMN_noise_8 = leadcalc(simuMN_noise,'stan');% V1,V2,V3,V4,V5,V6,I,II
-simuMN_noise_12 = leadcalc(simuMN_noise_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
+simuMN_8 = leadcalc(simuMN,'stan');% V1,V2,V3,V4,V5,V6,I,II
+simuMN_12 = leadcalc(simuMN_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
 
-simuMN_noise_15=vertcat(simuMN_noise_8(7,:),simuMN_noise_8(8,:),simuMN_noise_12(12,:),...
-    -simuMN_noise_12(9,:),-simuMN_noise_12(7,:),simuMN_noise_12(11,:),simuMN_noise_8(1:6,:),simuMN_noise);
+simuMN_15=vertcat(simuMN_8(7,:),simuMN_8(8,:),simuMN_12(12,:),...
+    -simuMN_12(9,:),-simuMN_12(7,:),simuMN_12(11,:),simuMN_8(1:6,:),simuMN);
 
 end

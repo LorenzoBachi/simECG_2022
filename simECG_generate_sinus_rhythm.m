@@ -14,7 +14,7 @@ end
 
 switch ecgParameters.ESTflag
     case 0 %Any case
-        hrmean = randi([50,90]);         % Generate heart rate from an interval of [50-80] bpm
+        hrmean = randi([50,80]);         % Generate heart rate from an interval of [50-80] bpm
         hrstd = randi([5,30])/10;               % Generate SD of heart rate from an interval of [0.5-3] bpm
         rrstd = hrstd/60;
         lfhfratio = randi([5,20])/10;           % Generate LF/HF ratio [0.5 - 2]

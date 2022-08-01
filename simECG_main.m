@@ -23,7 +23,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 5*60;   %desired ECG length in seconds;
+sigLength = 1*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -31,7 +31,7 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 ecgParameters.fs = 1000; %sampling frequency
 
 %--> Atrial fibrillation
-medEpis = 20;      % Median episode length > in beats <
+medEpis = 0;      % Median episode length > in beats <
 stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
 AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 
@@ -57,7 +57,7 @@ BT_p = [0.5, 0.5]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 20;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = 5;      % Type of noise. 
+noiseType = 6;      % Type of noise. 
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
@@ -66,7 +66,7 @@ noiseType = 5;      % Type of noise.
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 
-noiseRMS = 0.075;    % Noise level in millivolts. 
+noiseRMS = 0.02;    % Noise level in millivolts. 
 
 %--> Exercise stress test parameters %CPerez 03/2022
 ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
@@ -138,7 +138,7 @@ xlabel('Time [s]'); ylabel('RR [ms]');
 xlim([0,sigLength]);
 %axis([135, 145, 300, 1300]);
 
-l=11;
+l=7;
 switch l
     case 1
         line = 'I';
