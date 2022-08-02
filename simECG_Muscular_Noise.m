@@ -14,6 +14,7 @@ N200 = ceil(ecgLength/5);
 
 %--> 1) Select the value of the pole and time-varying model
 nu = rand(1)*(0.9995-0.990) + 0.990
+nu = 0.9999
 
 %--> 2) Apply 1st model and then sum the different signals
 u0 = noiseRMS*1e3; %in uV
@@ -41,13 +42,13 @@ for ii=1:N200-1
     out_1st_200(:,ii+1) = nu*out_1st_200(:,ii)+v1(:,ii);
 end
 
-Allout_1st_200 = max(0,out_1st_200 + u0 + ut); %all sum and ReLU
+Allout_1st_200 = max(1,out_1st_200 + u0 + ut); %all sum and ReLU
 
 
 % --> AR filter
 v2_200 = [];
 v2_200 = randn(size(Allout_1st_200,1),size(Allout_1st_200,2));
-v2_200 = normalize(v2_200','range',[-1 1])';
+% v2_200 = normalize(v2_200','range',[-1 1])';
 v2_200 = v2_200.*Allout_1st_200;
 
 simuMN_200 = [];
