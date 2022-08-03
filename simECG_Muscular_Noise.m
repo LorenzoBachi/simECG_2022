@@ -13,8 +13,7 @@ v1 = [];
 N200 = ceil(ecgLength/5);
 
 %--> 1) Select the value of the pole and time-varying model
-nu = rand(1)*(0.9995-0.990) + 0.990
-nu = 0.9999
+nu = rand(1)*(0.9999-0.990) + 0.990
 
 %--> 2) Apply 1st model and then sum the different signals
 u0 = noiseRMS*1e3; %in uV
@@ -23,8 +22,8 @@ if ecgParameters.ESTflag
     peak = (ecgParameters.peak*fs)/5;
     N1 = length(1:peak);
     N2 = length(peak:N200);
-    ut = [rescale(2.^((1:N1)./(100*fs)),-u0/2,u0),...
-        rescale(flip(2.^((1:N2)./(100*fs))),-u0/2,u0)];%exponential pattern exercise stress test
+    ut = [rescale(2.^((1:N1)./(100*fs)),-u0/2,u0/2),...
+        rescale(flip(2.^((1:N2)./(100*fs))),-u0/2,u0/2)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
     stdw = (u0/4)*0.5;
     
