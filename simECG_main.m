@@ -32,7 +32,6 @@ ecgParameters.fs = 1000; %sampling frequency
 
 %--> Atrial fibrillation
 medEpis = 0;      % Median episode length > in beats <
-stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
 AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 
 %--> Atrial tachycardia
@@ -92,7 +91,10 @@ end
 
 %% ECG generator
 clc
+if medEpis < 1, medEpis = 1; end
+if BT_medEpis < 1, medEpis = 1; end
 arrhythmiaParameters.AFburden = AFburden;
+stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
 arrhythmiaParameters.stayInAF = stayInAF;
 arrhythmiaParameters.APBph = APBph;
 arrhythmiaParameters.ATDist = ATDist;
