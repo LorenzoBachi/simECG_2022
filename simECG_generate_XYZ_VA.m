@@ -15,21 +15,23 @@ pqrstFrank = zeros(3,num,540); %560 default;alba:650
 F = 1;                          % heart rate
 teta0 = -pi/2;                  % initial phase of the ECG
 
+% Increasing QRS complex maximum amplitude
+asf = 1.25; %amplitude scaling factor
 
 %% QRS
 Qw = simECG_random_number(0.05, 0.08);
 Rw = simECG_random_number(0.05, 0.08);
 Sw = simECG_random_number(0.05, 0.08);
 
-alphaiQRS.x = [ simECG_random_number(-0.4, -0.05)  simECG_random_number(0.4, 1.5)     0];
+alphaiQRS.x = [ simECG_random_number(-0.4, -0.05)  simECG_random_number(0.4, 1.5*asf)     0];
 biQRS.x     = [Qw    Rw    Sw];
 tetaiQRS.x  = [-0.1    0    0.1];
 
-alphaiQRS.y = [ 0    simECG_random_number(0.1, 0.7)   simECG_random_number(-0.3, -0.05)];
+alphaiQRS.y = [ 0    simECG_random_number(0.1, 0.7*asf)   simECG_random_number(-0.3, -0.05)];
 biQRS.y     = [Qw   Rw   Sw];
 tetaiQRS.y  = [-0.1   0   0.1];
 
-alphaiQRS.z = [simECG_random_number(-0.4, -0.05)   0  simECG_random_number(0.1, 1)];
+alphaiQRS.z = [simECG_random_number(-0.4, -0.05)   0  simECG_random_number(0.1, 1*asf)];
 biQRS.z     = [Qw   Rw  Sw];
 tetaiQRS.z  = [ -0.1   0   0.1];
 

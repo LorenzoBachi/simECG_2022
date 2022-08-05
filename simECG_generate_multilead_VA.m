@@ -1,4 +1,4 @@
-function [QRSindex, TendIndex, rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, realAAon, realRRon, ecgParameters,state_history)
+function [QRSindex, TendIndex, rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, ecgParameters,state_history)
 % [] = simECG_gen_multilead_VA() returns multilead (15 lead) ventricular
 % activity. A set of 100 15-lead ECGs with SR selected from the PTB Diagnostic
 % ECG Database is used as a basis for modeling ventricular activity. The ECGs
