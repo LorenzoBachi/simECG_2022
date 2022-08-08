@@ -7,7 +7,6 @@ function [simuMN_15] = simECG_Muscular_Noise(ecgLength, ecgParameters, noiseRMS)
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal
 load('DATA_AR_MN_Dictionary.mat')
-ARp = squeeze(AR_MN(randi([1,25]),:,:));
 fs = ecgParameters.fs;
 v1 = [];
 N200 = ceil(ecgLength/5);
@@ -25,7 +24,7 @@ if ecgParameters.ESTflag
     ut = [rescale(2.^((1:N1)./(100*fs)),-u0/2,u0/2),...
         rescale(flip(2.^((1:N2)./(100*fs))),-u0/2,u0/2)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
-    stdw = (u0/4)*0.5;
+    stdw = (u0/2)*0.5;
     
 else
     ut = zeros(3, N200);
@@ -44,15 +43,47 @@ end
 Allout_1st_200 = max(1,out_1st_200 + u0 + ut); %all sum and ReLU
 
 
-% --> AR filter
+% --> AR filter: with a random walk model
 v2_200 = [];
 v2_200 = randn(size(Allout_1st_200,1),size(Allout_1st_200,2));
 % v2_200 = normalize(v2_200','range',[-1 1])';
 v2_200 = v2_200.*Allout_1st_200;
 
 simuMN_200 = [];
+
+
 for Li = 1:3
-    simuMN_200(Li,:) = filter(1,ARp(:,Li),v2_200(Li,:)')';
+    aAR = AR_MN(randi([1,25],1),:,Li);
+    [z,p,k] = tf2zpk(1,aAR); %poles of random-selected AR coefficients
+    nSteps = ceil(N200/(10*200)); %each 10 seconds
+    pnew = zeros(nSteps,4);
+    
+    pnew(:,1) = RandomWalk(nSteps,real(p(1)),0.02); %real P1
+    pnew(:,1) = pnew(:,1) + RandomWalk(nSteps,imag(p(1)),0.02)'.*i; %imag P1
+    pnew(:,3) = RandomWalk(nSteps,real(p(3)),0.02); %real P2
+    pnew(:,3) = pnew(:,3) + RandomWalk(nSteps,imag(p(3)),0.02)'.*i; %imag P2
+    pnew(:,2) = conj(pnew(:,1));
+    pnew(:,4) = conj(pnew(:,3));
+    
+    pIni = 1;
+    pEnd = 10*200;
+    for ii = 1:nSteps
+        [b,aARnew] = zp2tf(z,pnew(ii,:),k);
+        simuMN_200(Li,pIni:pEnd) = filter(1,aARnew,v2_200(Li,pIni:pEnd)')';
+        if ii == nSteps-1
+            pIni = pEnd+1;
+            pEnd = length(v2_200);
+        else
+            pIni = pEnd+1;
+            pEnd = pIni + 10*200 -1;
+        end
+    end
+    
+%     figure(3), subplot(2,2,Li), %to plot the different poles of each lead
+%     plot([-1 1], [0 0],':k',[0 0], [-1 1],':k')
+%     hold on, plot(p,'or'), plot(pnew,'xb')
+%     xlim([-1 1]), ylim([-1 1])
+%     title({'Lead ' num2str(Li)})
 end
 
 % --> Resample to 1000Hz
@@ -74,5 +105,4 @@ simuMN_12 = leadcalc(simuMN_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
 
 simuMN_15=vertcat(simuMN_8(7,:),simuMN_8(8,:),simuMN_12(12,:),...
     -simuMN_12(9,:),-simuMN_12(7,:),simuMN_12(11,:),simuMN_8(1:6,:),simuMN);
-
 end
