@@ -1,4 +1,4 @@
-function [simuMN_15] = simECG_Muscular_Noise(ecgLength, ecgParameters, noiseRMS)
+function [simuMN_15, pnew] = simECG_Muscular_Noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal.
 %
@@ -24,14 +24,14 @@ if ecgParameters.ESTflag
     ut = [rescale(2.^((1:N1)./(100*fs)),-u0/2,u0/2),...
         rescale(flip(2.^((1:N2)./(100*fs))),-u0/2,u0/2)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
-    stdw = (u0/2)*0.5;
-    
+    stdw = [linspace((u0/2)*0.3, u0*0.3, N1),linspace(u0*0.3, (u0/2)*0.3, N2)];
 else
     ut = zeros(3, N200);
-    stdw = u0*0.5;
+    stdw = u0*0.3;
 end
 
-sigma_v1 = stdw*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
+
+sigma_v1 = stdw.*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
 v1 = randn(3, N200).*sigma_v1; %Frank leads
 
 out_1st_200 = zeros(3,N200);
@@ -52,23 +52,21 @@ v2_200 = v2_200.*Allout_1st_200;
 simuMN_200 = [];
 
 
+aAR = squeeze(AR_MN(randi([1,25],1),:,:));
+nSteps = ceil(N200/(10*200)); %each 10 seconds
+pnew = zeros(nSteps,4,3);
+
 for Li = 1:3
-    aAR = AR_MN(randi([1,25],1),:,Li);
-    [z,p,k] = tf2zpk(1,aAR); %poles of random-selected AR coefficients
-    nSteps = ceil(N200/(10*200)); %each 10 seconds
-    pnew = zeros(nSteps,4);
-    
-    pnew(:,1) = RandomWalk(nSteps,real(p(1)),0.02); %real P1
-    pnew(:,1) = pnew(:,1) + RandomWalk(nSteps,imag(p(1)),0.02)'.*i; %imag P1
-    pnew(:,3) = RandomWalk(nSteps,real(p(3)),0.02); %real P2
-    pnew(:,3) = pnew(:,3) + RandomWalk(nSteps,imag(p(3)),0.02)'.*i; %imag P2
-    pnew(:,2) = conj(pnew(:,1));
-    pnew(:,4) = conj(pnew(:,3));
-    
+    [z,p,k] = tf2zpk(1,aAR(:,Li)); %poles of random-selected AR coefficients
+    pnew(:,1,Li) = RandomWalk(nSteps,p(1),0.02, 0.01);
+    pnew(:,3,Li) = RandomWalk(nSteps,p(3),0.02, 0.01);
+    pnew(:,2,Li) = conj(pnew(:,1,Li));
+    pnew(:,4,Li) = conj(pnew(:,3,Li));
+
     pIni = 1;
     pEnd = 10*200;
     for ii = 1:nSteps
-        [b,aARnew] = zp2tf(z,pnew(ii,:),k);
+        [b,aARnew] = zp2tf(z,pnew(ii,:,Li),k);
         simuMN_200(Li,pIni:pEnd) = filter(1,aARnew,v2_200(Li,pIni:pEnd)')';
         if ii == nSteps-1
             pIni = pEnd+1;
@@ -81,7 +79,7 @@ for Li = 1:3
     
 %     figure(3), subplot(2,2,Li), %to plot the different poles of each lead
 %     plot([-1 1], [0 0],':k',[0 0], [-1 1],':k')
-%     hold on, plot(p,'or'), plot(pnew,'xb')
+%     hold on, plot(p,'or'), plot(squeeze(pnew(:,:,Li)),'xb')
 %     xlim([-1 1]), ylim([-1 1])
 %     title({'Lead ' num2str(Li)})
 end

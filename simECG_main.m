@@ -23,7 +23,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 1*60;   %desired ECG length in seconds;
+sigLength = 2*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -50,10 +50,10 @@ load('ATDist.mat'); %comment for custom probability distribution
 VPBph = 0;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
-BT_r = 0.1; % rate of bigeminy and trigeminy
+BT_r = 0; % rate of bigeminy and trigeminy
 BT_p = [0.5, 0.5]; % differential probability of bigeminy vs trigeminy
 %Setting both probabilities to zero deactivates the BT state
-BT_medEpis = 20;    % Median episode length (in beats) for bigeminy and trigeminy
+BT_medEpis = 0;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
 noiseType = 6;      % Type of noise. 
@@ -65,26 +65,26 @@ noiseType = 6;      % Type of noise.
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 
-noiseRMS = 0.01;    % Noise level in millivolts. 
+noiseRMS = 0.008;    % Noise level in millivolts. 
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
-    ecgParameters.Basal = 3*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
-    ecgParameters.Exercise = 8*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
-    ecgParameters.Recovery = 3.3*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
-    ecgParameters.Basal2 = 2*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
+    ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
+    ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
+    ecgParameters.Recovery = randi([3,5],1)*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
+    ecgParameters.Basal2 = randi([1,2],1)*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
     
     ecgParameters.Duration = ecgParameters.Basal +ecgParameters.Exercise + ecgParameters.Recovery + ecgParameters.Basal2; %Duration of Exercise Stress Test in seconds. %Cris 04/2022
     ecgParameters.peak = ecgParameters.Basal +ecgParameters.Exercise;    % peak of Exercise Stress Test in seconds. %Cris 04/2022
     sigLength =  ecgParameters.Duration;
-    ecgParameters.RRini = 60/60;    % onset HR express according to RR in seconds. %Cris 04/2022
-    ecgParameters.RRpeak = 60/180;    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
-    ecgParameters.RRend = 60/70;    % final HR express according to RR in seconds. %Cris 04/2022
+    ecgParameters.RRini = 60/randi([55,70],1);    % onset HR express according to RR in seconds. %Cris 04/2022
+    ecgParameters.RRpeak = 60/randi([160,180],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
+    ecgParameters.RRend = ecgParameters.RRini*1.2;    % final HR express according to RR in seconds. %Cris 04/2022
     
-    ecgParameters.Frini = 0.3;    % onset Respiratory frequency in Hz. %Cris 04/2022
-    ecgParameters.Frpeak = 0.7;    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
-    ecgParameters.Frend = 0.3;    % final Respiratory frequency in Hz. %Cris 04/2022
+    ecgParameters.Frini = (0.35 - 0.25)*rand(1) + 0.25;    % onset Respiratory frequency in Hz. %Cris 04/2022
+    ecgParameters.Frpeak = (0.75 - 0.65)*rand(1) + 0.65;    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
+    ecgParameters.Frend = (0.35 - 0.25)*rand(1) + 0.25;    % final Respiratory frequency in Hz. %Cris 04/2022
 end
 
 % Note: cannot select real atrial activity and synthetic ventricular activity

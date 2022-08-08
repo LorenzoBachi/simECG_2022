@@ -103,7 +103,7 @@ switch onlyRR
         % Generate multilead atrial activity
         multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.AFburden, ecgParameters);
         % Generate multilead noise
-        multileadNoise = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ecgParameters);
+        [multileadNoise, poles] = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ecgParameters);
         % Generate multilead noise
         multileadECG = multileadVA + multileadAA + multileadNoise;
 
@@ -120,6 +120,7 @@ switch onlyRR
         simECGdata.state_history = state_history;
         simECGdata.ecgLength = ecgLength';
         simECGdata.Fr = ecgParameters.Fr';
+        simECGdata.poles = poles;
                
 
         initialParameters.fibFreqz = fibFreqz;
