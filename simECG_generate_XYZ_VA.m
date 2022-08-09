@@ -16,7 +16,7 @@ F = 1;                          % heart rate
 teta0 = -pi/2;                  % initial phase of the ECG
 
 % Increasing QRS complex maximum amplitude
-asf = 1.25; %amplitude scaling factor
+asf = 1.4; %amplitude scaling factor
 
 %% QRS
 Qw = simECG_random_number(0.05, 0.08);
