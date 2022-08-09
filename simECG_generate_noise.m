@@ -20,6 +20,8 @@ function [multileadNoise, poles] = simECG_generate_noise(ecgLength, noiseType, n
 
 disp('Generating noise ...');
 
+poles=[];
+
 noiseLength = 1805556; % Noise length
 if ecgLength < noiseLength
     noiseStart = randi([1 (noiseLength-ecgLength)]); % take starting point randomly
