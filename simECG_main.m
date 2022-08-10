@@ -66,7 +66,7 @@ noiseType = 6;      % Type of noise.
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 
-noiseRMS = 0.015;    % Noise level in millivolts. 
+noiseRMS = 0.020;    % Noise level in millivolts. 
 
 %--> Exercise stress test parameters %CPerez 03/2022
 ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
@@ -80,7 +80,7 @@ if ecgParameters.ESTflag
     ecgParameters.peak = ecgParameters.Basal +ecgParameters.Exercise;    % peak of Exercise Stress Test in seconds. %Cris 04/2022
     sigLength =  ecgParameters.Duration;
     ecgParameters.RRini = 60/randi([55,70],1);    % onset HR express according to RR in seconds. %Cris 04/2022
-    ecgParameters.RRpeak = 60/randi([160,180],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
+    ecgParameters.RRpeak = 60/randi([165,180],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
     ecgParameters.RRend = ecgParameters.RRini*1.2;    % final HR express according to RR in seconds. %Cris 04/2022
     
     ecgParameters.Frini = (0.35 - 0.25)*rand(1) + 0.25;    % onset Respiratory frequency in Hz. %Cris 04/2022
