@@ -29,12 +29,10 @@ nfreq = 4; %Interpolation to 4 Hz;
 timebeats = cumsum(rr(2:end))/1000; %In seconds
 timebeats = [0;timebeats];
 % resample RR series to an evenly spaced series
-%[pos,RR_ori]=resamp(rr_sec,timebeats*Fs,Fs,nfreq);
-pos = (timebeats(1)*Fs:Fs/nfreq:timebeats(length(rr_sec))*Fs)';
-RR_ori = interp1(timebeats,rr_sec,pos,'spline'); %pos in samples, RR_ori in sec
+[pos,RR_ori]=resamp(rr_sec,timebeats*Fs,Fs,nfreq);%pos in samples, RR_ori in sec
 pos = pos/Fs; %sec
 RR_exp = NaN(size(RR_ori));
-L = 300; %window size in seconds. Note: this parameter is used when real EST RR is loaded
+L = 300; %window size in seconds.
 N = min(L*nfreq,length(RR_ori));
 j2=[0:1:N-1]';
 tau_s = 25;
