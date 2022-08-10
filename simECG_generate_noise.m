@@ -93,7 +93,7 @@ switch noiseType
         end
         
     case 6     %Simulated Muscular Noise
-        [multileadNoise, poles] = simECG_Muscular_Noise(ecgLength,ecgParameters, noiseRMS);%in mVolts   
+        [multileadNoise, poles] = simECG_muscular_noise(ecgLength,ecgParameters, noiseRMS);%in mVolts   
 end
 
 if noiseType > 0 && noiseType ~=6
