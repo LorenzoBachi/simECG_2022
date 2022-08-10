@@ -20,7 +20,7 @@ A = 1.25;
 asf=zeros(1,6);
 for k=1:6
     %amplitude scaling factor
-    asf(k) = max(min(rand*A + (0.5*(rand-0.5)),f),0); % 25% bounded variation around selected value
+    asf(k) = max(min(rand*A + (0.5*(rand-0.5)),A),0); % 25% bounded variation around selected value
 end
 
 %% QRS
