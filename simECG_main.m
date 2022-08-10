@@ -66,14 +66,10 @@ noiseType = 6;      % Type of noise.
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 
-<<<<<<< HEAD
-noiseRMS = 0.01;    % Noise level in millivolts. 
-=======
 noiseRMS = 0.015;    % Noise level in millivolts. 
->>>>>>> da4dd469fb5f3f77cd147c6f88b361a174e2d338
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022

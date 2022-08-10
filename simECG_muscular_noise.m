@@ -21,12 +21,12 @@ if ecgParameters.ESTflag
     peak = (ecgParameters.peak*fs)/5;
     N1 = length(1:peak);
     N2 = length(peak:N200);
-    ut = [rescale(2.^((1:N1)./(100*fs)),-u0/2,u0/2),...
-        rescale(flip(2.^((1:N2)./(100*fs))),-u0/2,u0/2)];%exponential pattern exercise stress test
+    ut = [rescale(2.^((1:N1)./(100*fs)),u0/2,3*u0/2),...
+        rescale(2.^(-(1:N2)./(100*fs)),u0/2,3*u0/2)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
-    stdw = [linspace((u0/2)*0.3, u0*0.3, N1),linspace(u0*0.3, (u0/2)*0.3, N2)];
+    stdw = [linspace((u0/2)*0.3, (3*u0/2)*0.3, N1),linspace((3*u0/2)*0.3, (u0/2)*0.3, N2)];
 else
-    ut = zeros(3, N200);
+    ut = u0 + zeros(3, N200);
     stdw = u0*0.3;
 end
 
@@ -40,7 +40,7 @@ for ii=1:N200-1
     out_1st_200(:,ii+1) = nu*out_1st_200(:,ii)+v1(:,ii);
 end
 
-Allout_1st_200 = max(1,out_1st_200 + u0 + ut); %all sum and ReLU
+Allout_1st_200 = max(1,out_1st_200 + ut); %all sum and ReLU
 
 
 % --> AR filter: with a random walk model
