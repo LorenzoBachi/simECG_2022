@@ -16,14 +16,13 @@
 % Hesam Halvaei, PhD student at Lund University, Lund, Sweden
 % hesam.halvaei@bme.lth.se
 
-
 % ECG is simulated @1 KHz.
 
 clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 2*60;   %desired ECG length in seconds;
+sigLength = 5*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -31,7 +30,7 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 ecgParameters.fs = 1000; %sampling frequency
 
 %--> Atrial fibrillation
-medEpis = 0;      % Median episode length > in beats <
+medEpis = 10;      % Median episode length > in beats <
 AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 
 %--> Atrial tachycardia
@@ -44,16 +43,18 @@ load('ATDist.mat'); %comment for custom probability distribution
 % The second element of the distribution relates to coupltes, and so on.
 % The maximum length of ATDist represents the maximum desidred length of an
 % atrial tachycardia episode (default: 50)
-%ATDist = %sqrt(ATDist); %ones(1,50);
+%ATDist = sqrt(ATDist);
+%ATDist = ones(1,50);
+%ATDist = ATDist.^(1/3);
 
 % Ventricular premature beats
 VPBph = 0;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
 BT_r = 0; % rate of bigeminy and trigeminy
-BT_p = [0.5, 0.5]; % differential probability of bigeminy vs trigeminy
+BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 %Setting both probabilities to zero deactivates the BT state
-BT_medEpis = 0;    % Median episode length (in beats) for bigeminy and trigeminy
+BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
 noiseType = 6;      % Type of noise. 
@@ -65,10 +66,14 @@ noiseType = 6;      % Type of noise.
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 
+<<<<<<< HEAD
 noiseRMS = 0.01;    % Noise level in millivolts. 
+=======
+noiseRMS = 0.015;    % Noise level in millivolts. 
+>>>>>>> da4dd469fb5f3f77cd147c6f88b361a174e2d338
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
@@ -92,7 +97,7 @@ end
 %% ECG generator
 clc
 if medEpis < 1, medEpis = 1; end
-if BT_medEpis < 1, medEpis = 1; end
+if BT_medEpis < 1, BT_medEpis = 1; end
 arrhythmiaParameters.AFburden = AFburden;
 stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
 arrhythmiaParameters.stayInAF = stayInAF;
@@ -210,28 +215,30 @@ set(gcf, 'Position', get(0, 'Screensize'));
 %% Provisional code for the paper figures
 % clear simECGdata;
 % spacing = 2;
+% dims = [-2,4,4];
 % if ishandle(4), close(4); end
 % figure(4);
 % hold on;
-% limits = [288, 294]; %seconds
+% limits = [105.5, 115.5]; %seconds
 % idx = round(limits(1)*1000) +1: round(limits(2)*1000 +1);
 % tf = t( idx );
 % lh1 = plot(tf-limits(1),multileadECG(7,idx)','k');
 % lh2 = plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k');
-% axis([tf(1)-limits(1),tf(end)-limits(1),-1.5,3.5]);
-% set(gcf,'units','centimeters','position',[15,15,18,6]);
+% axis([tf(1)-limits(1),tf(end)-limits(1),dims(1),dims(2)]);
+% set(gcf,'units','centimeters','position',[15,15,18,dims(3)]);
 % set(gca,'FontName','Times','Fontsize',10);
-% box on;
-% gridecg2(0.25,0.25);
+% box off; axis off;
+% gridecg2(5,0);
 % %set(gca,'ytick',[-0.5,0,0.5,1.5,2,2.5]); set(gca,'yticklabel',{'-0.5','0','0.5','-0.5','0','0.5'});
 % set(gca,'ytick',[0,2]); set(gca,'yticklabel',{'V1','II'});
-% set(gca,'TickLength',[0 0])
+% set(gca,'TickLength',[0 0]); set(gca,'xtick',[]);
 % delete(lh1); delete(lh2);
-% lh1 = plot(tf-limits(1),multileadECG(7,idx)','k');
-% lh2 = plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k');
+% lh1 = plot(tf-limits(1),multileadECG(7,idx)','k','LineWidth',0.5);
+% lh2 = plot(tf-limits(1),multileadECG(2,idx)'+spacing*ones(1,length(idx)),'k','LineWidth',0.5);
 % paper_example.multileadECG = multileadECG;
 % paper_example.limits = limits;
-%save('.\ECG simulator\2022 07 Paper examples\paper_example5.mat','paper_example');
+% paper_example.dims = dims;
+%save('.\ECG simulator\paper_example1.mat','paper_example');
 
 
 

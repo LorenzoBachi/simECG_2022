@@ -6,13 +6,13 @@ function [simuMN_15, pnew] = simECG_muscular_noise(ecgLength, ecgParameters, noi
 
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal
-load('DATA_AR_MN_Dictionary.mat')
+load('DATA_AR_MN_Dictionary.mat');
 fs = ecgParameters.fs;
 v1 = [];
 N200 = ceil(ecgLength/5);
 
 %--> 1) Select the value of the pole and time-varying model
-nu = rand(1)*(0.9999-0.990) + 0.990
+nu = rand(1)*(0.9999-0.990) + 0.990;
 
 %--> 2) Apply 1st model and then sum the different signals
 u0 = noiseRMS*1e3; %in uV
