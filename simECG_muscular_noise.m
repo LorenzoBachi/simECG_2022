@@ -12,7 +12,7 @@ v1 = [];
 N200 = ceil(ecgLength/5);
 
 %--> 1) Select the value of the pole and time-varying model
-nu = rand(1)*(0.9999-0.990) + 0.990;
+nu = rand(1)*(0.9999-0.99) + 0.99;
 
 %--> 2) Apply 1st model and then sum the different signals
 u0 = noiseRMS*1e3; %in uV
