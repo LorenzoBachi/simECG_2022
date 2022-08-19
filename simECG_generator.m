@@ -103,7 +103,10 @@ switch onlyRR
         % Generate multilead atrial activity
         multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.AFburden, ecgParameters);
         % Generate multilead noise
-        [multileadNoise, poles] = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ecgParameters);
+        for ii = 1:numel(noiseType)
+            [multileadNoise_All(:,:,ii), poles] = simECG_generate_noise(ecgLength, noiseType(ii), noiseRMS(ii), ecgParameters);
+        end
+        multileadNoise = sum(multileadNoise_All,3);
         % Generate multilead noise
         multileadECG = multileadVA + multileadAA + multileadNoise;
 
