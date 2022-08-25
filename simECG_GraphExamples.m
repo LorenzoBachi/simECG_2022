@@ -52,7 +52,7 @@ for ii = 1:4
     set(gca,'fontsize',9,'FontName', 'Times','visible','off')
 end
 nexttile(11,[1 1]);
-text(0,1.2,{'Check box'; 'if simulated'},'FontName', 'Times')
+text(0,1.2,{'Check box'; 'if unrealistic'},'FontName', 'Times')
 
 ab(6) = nexttile(45,[1 11]);
 rectangle('Position',[0 0 2 2])
