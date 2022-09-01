@@ -57,8 +57,8 @@ BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [7];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS = [0.060]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseType = [6];        % Type of noise. Vector with the number of all type of noise you want
+noiseRMS = [0.020]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
