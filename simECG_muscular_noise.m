@@ -21,10 +21,10 @@ if ecgParameters.ESTflag
     peak = (ecgParameters.peak*fs)/5;
     N1 = length(1:peak);
     N2 = length(peak:N200);
-    ut = [rescale(2.^((1:N1)./(100*fs)),u0/2,3*u0/2),...
-        rescale(2.^(-(1:N2)./(100*fs)),u0/2,3*u0/2)];%exponential pattern exercise stress test
+    ut = [rescale(2.^((1:N1)./(100*fs)),u0/3,3*u0/3),...
+        rescale(2.^(-(1:N2)./(100*fs)),u0/3,3*u0/3)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
-    stdw = [linspace((u0/2)*0.3, (3*u0/2)*0.3, N1),linspace((3*u0/2)*0.3, (u0/2)*0.3, N2)];
+    stdw = [linspace((u0/3)*0.3, (3*u0/3)*0.3, N1),linspace((3*u0/3)*0.3, (u0/3)*0.3, N2)];
 else
     ut = u0 + zeros(3, N200);
     stdw = u0*0.3;

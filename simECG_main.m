@@ -57,8 +57,8 @@ BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [3 6];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS = [0.040 0.020]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseType = [7];        % Type of noise. Vector with the number of all type of noise you want
+noiseRMS = [0.060]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
@@ -66,11 +66,12 @@ noiseRMS = [0.040 0.020]; % Noise level in millivolts. Vector with each RMS leve
 % 4 - a mixture of all noises;
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
+% 7 - Real Exercise stress test noise (from R. Bailón)
 
 
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
@@ -142,7 +143,7 @@ xlabel('Time [s]'); ylabel('RR [ms]');
 xlim([0,sigLength]);
 %axis([135, 145, 300, 1300]);
 
-l=11;
+l=10;
 switch l
     case 1
         line = 'I';
