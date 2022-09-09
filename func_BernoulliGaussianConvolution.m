@@ -1,4 +1,4 @@
-function [bernogauss_conv] = func_BernoulliGaussianConvolution(len, bernogauss)
+function [bernogauss_conv] = simECG_BernoulliGaussianConvolution(len, bernogauss)
 % func_BernoulliGaussianConvolution convolve the a realizaiton of bernoulli
 % gaussian process with varying filter, i.e., 
 % INPUT a bernoulli gaussian realization
