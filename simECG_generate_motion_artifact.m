@@ -24,8 +24,8 @@ ar_coeffs = AR_MN(randi([1, size(AR_MN, 1)]), :, randi([1, size(AR_MN, 3)]));
 % N is the length of simulated noise, corresponds to a 30 s noise based on
 % sampling frequecy of 1 Hz
 N = 30000; 
-[bernogauss] = simECG_BernoulliGaussian(N, successProb, sigmaBernoGauss);
-[bernogauss_conv] = simECG_BernoulliGaussianConvolution(N, bernogauss);
+[bernogauss] = simECG_Bernoulli_Gaussian(N, successProb, sigmaBernoGauss);
+[bernogauss_conv] = simECG_Bernoulli_Gaussian_convolution(N, bernogauss);
 
 white_noise = normrnd(0, sigmaARinput, [N, 1]);
 ar_input = white_noise  + bernogauss_conv;
