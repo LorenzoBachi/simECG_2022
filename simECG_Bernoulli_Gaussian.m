@@ -1,4 +1,4 @@
-function [bernogauss] = simECG_BernoulliGaussian(n, prob, sigma)
+function [bernogauss] = simECG_Bernoulli_Gaussian(n, prob, sigma)
 % Realization of a Bernoulli-Gaussian process
 N = ones(n, 1);
 p = N.*prob;
