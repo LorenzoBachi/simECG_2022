@@ -1,4 +1,4 @@
-function [states] = simECG_StateGen(l2h, h2l)
+function [states] = simECG_state_gen(l2h, h2l)
 %% Generation of states
 % l2h is the probability of transition to noisy segment 
 % h2l is the probability of transition to clean segment 
