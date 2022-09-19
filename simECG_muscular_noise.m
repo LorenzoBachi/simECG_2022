@@ -1,6 +1,6 @@
 function [simuMN_15, pnew] = simECG_muscular_noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
-% signal.
+% signal in mV.
 %
 % Copyright (c), Cristina Perez, University of Zaragoza, 07/2022
 
@@ -94,7 +94,7 @@ if size(simuMN,2) > ecgLength
      simuMN = simuMN(:,1:ecgLength);
 end
 
-simuMN = simuMN.*1e-3; %inmV
+simuMN = simuMN.*1e-3; %in mV
 
 % Transform to the 15 leads
 %1)Obtain augmented unipolar limb leads

@@ -59,6 +59,12 @@ BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigemin
 %--> Noise Parameters
 noiseType = [6];        % Type of noise. Vector with the number of all type of noise you want
 noiseRMS = [0.020]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+
+%Motion artifacts parameters
+ecgParameters.MA_Prob = 0.5; %the probability of success, i.e., spikes 
+ecgParameters.MA_sigBernoGauss = 0; % std used in the bernoulli process. In millivolts.
+ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
+    
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
@@ -67,7 +73,7 @@ noiseRMS = [0.020]; % Noise level in millivolts. Vector with each RMS level acco
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 % 7 - Real Exercise stress test noise (from R. Bailón)
-
+% 8 - Motion artifacts
 
 
 %--> Exercise stress test parameters %CPerez 03/2022
