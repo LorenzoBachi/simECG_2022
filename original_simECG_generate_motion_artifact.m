@@ -1,4 +1,4 @@
-function [simNoise] = simECG_generate_motion_artifact(successProb, sigmaBernoGauss, sigmaARinput, modalityFlag)
+function [simNoise] = original_simECG_generate_motion_artifact(successProb, sigmaBernoGauss, sigmaARinput, modalityFlag)
 % INPUTS:
 % - successProb : the probability of success, i.e., spikes 
 

@@ -99,11 +99,8 @@ v2 = [];
 for ii = 1:L
     simuMN(ii,:) = resample(simuMN_200(ii,:), 1000, 200);
 end
-if size(simuMN,2) > ecgLength
-     simuMN = simuMN(:,1:ecgLength);
-end
 
-simuMN = simuMN.*1e-3; %in mV
+simuMN = simuMN(:,1:ecgLength).*1e-3; %in mV
 
 
 if ~ecgParameters.MA_Flag % Transform to the 15 leads

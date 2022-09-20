@@ -19,7 +19,8 @@ function [simuMA] = simECG_generate_motion_artifact(ecgLength,ecgParameters, noi
 % noise recordings.
 
 if  ~isfield(ecgParameters,'sigmav') %no previous simulated muscular noise
-    ecgParameters.sigmav = (0.03*noiseRMS)*1e3; %in uV;
+%     ecgParameters.sigmav = (0.03*noiseRMS)*1e3; %in uV;
+        ecgParameters.sigmav = 0.6; %in uV; 
 end
 
 if ecgParameters.MA_Flag %Thumb-ECG
