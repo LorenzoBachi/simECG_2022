@@ -1,4 +1,4 @@
-function [simuMN_15, pnew] = simECG_muscular_noise(ecgLength, ecgParameters, noiseRMS)
+function [simuMN_15, info] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %
@@ -24,15 +24,15 @@ if ecgParameters.ESTflag
     ut = [rescale(2.^((1:N1)./(100*fs)),u0/3,3*u0/3),...
         rescale(2.^(-(1:N2)./(100*fs)),u0/3,3*u0/3)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
-    stdw = [linspace((u0/3)*0.3, (3*u0/3)*0.3, N1),linspace((3*u0/3)*0.3, (u0/3)*0.3, N2)];
+    sigmax = [linspace((u0/3)*0.3, (3*u0/3)*0.3, N1),linspace((3*u0/3)*0.3, (u0/3)*0.3, N2)];
 else
     ut = u0 + zeros(3, N200);
-    stdw = u0*0.3;
+    sigmax = u0*0.3;
 end
 
 
-sigma_v1 = stdw.*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
-v1 = randn(3, N200).*sigma_v1; %Frank leads
+sigmav = sigmax.*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
+v1 = randn(3, N200).*sigmav; %Frank leads
 
 out_1st_200 = zeros(3,N200);
 
@@ -40,14 +40,14 @@ for ii=1:N200-1
     out_1st_200(:,ii+1) = nu*out_1st_200(:,ii)+v1(:,ii);
 end
 
-Allout_1st_200 = max(1,out_1st_200 + ut); %all sum and ReLU
+sigmaw = max(1,out_1st_200 + ut); %all sum and ReLU
 
 
 % --> AR filter: with a random walk model
 v2_200 = [];
-v2_200 = randn(size(Allout_1st_200,1),size(Allout_1st_200,2));
+v2_200 = randn(size(sigmaw,1),size(sigmaw,2));
 % v2_200 = normalize(v2_200','range',[-1 1])';
-v2_200 = v2_200.*Allout_1st_200;
+v2_200 = v2_200.*sigmaw;
 
 simuMN_200 = [];
 
@@ -95,6 +95,10 @@ if size(simuMN,2) > ecgLength
 end
 
 simuMN = simuMN.*1e-3; %in mV
+
+info = [];
+info.sigmav = sigmav;
+info.sigmaw = sigmaw;
 
 % Transform to the 15 leads
 %1)Obtain augmented unipolar limb leads
