@@ -48,7 +48,7 @@ load('ATDist.mat'); %comment for custom probability distribution
 %ATDist = ATDist.^(1/3);
 
 % Ventricular premature beats
-VPBph = 0;         % Number of VPBs per hour
+VPBph = 300;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
 BT_r = 0; % rate of bigeminy and trigeminy
@@ -57,7 +57,7 @@ BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [8];        % Type of noise. Vector with the number of all type of noise you want
+noiseType = [6];        % Type of noise. Vector with the number of all type of noise you want
 noiseRMS = [0.020]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 
 %Motion artifacts parameters
@@ -78,7 +78,7 @@ ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
@@ -153,6 +153,7 @@ xlim([0,sigLength]);
 l=10;
 switch l
     case 1
+        
         line = 'I';
     case 2
         line = 'II';
