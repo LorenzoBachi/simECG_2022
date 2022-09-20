@@ -23,14 +23,14 @@ if ecgParameters.ESTflag
     ut = [rescale(2.^((1:N1)./(100*fs)),u0/3,3*u0/3),...
         rescale(2.^(-(1:N2)./(100*fs)),u0/3,3*u0/3)];%exponential pattern exercise stress test
     ut = repmat(ut,3,1);
-    stdv = [linspace((u0/3)*0.3, (3*u0/3)*0.3, N1),linspace((3*u0/3)*0.3, (u0/3)*0.3, N2)];
+    sigmax = [linspace((u0/3)*0.3, (3*u0/3)*0.3, N1),linspace((3*u0/3)*0.3, (u0/3)*0.3, N2)];
 else
     ut = u0 + zeros(3, N200);
-    stdv = u0*0.3;
+    sigmax = u0*0.3;
 end
 
-sigma_v1 = stdv.*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
-v1 = randn(3, N200).*sigma_v1; %Gaussian noise - Frank leads
+sigmav = sigmax.*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
+v1 = randn(3, N200).*sigmav; %Gaussian noise - Frank leads
 
 out_1st_200 = zeros(3,N200);
 
@@ -38,17 +38,17 @@ for ii=1:N200-1
     out_1st_200(:,ii+1) = nu*out_1st_200(:,ii)+v1(:,ii);
 end
 
-stdw = max(1,out_1st_200 + ut); %all sum and ReLU
+sigmaw = max(1,out_1st_200 + ut); %all sum and ReLU
 
 
 % --> Inputs AR filter: Gaussian noise + Bernoulli
 v2_200 = [];
-v2_200 = randn(size(stdw,1),size(stdw,2)); %Gaussian noise - Frank leads
-v2_200 = v2_200.*stdw;
-bernogauss = simECG_Bernoulli_Gaussian(N200, ecgParameters.MA_Prob, stdv);
+v2_200 = randn(size(sigmaw,1),size(sigmaw,2)); %Gaussian noise - Frank leads
+v2_200 = v2_200.*sigmaw;
+bernogauss = simECG_Bernoulli_Gaussian(N200, ecgParameters.MA_Prob, sigmav);
 bernogauss_conv = simECG_Bernoulli_Gaussian_convolution(N200, bernogauss);
 
-v2B_200 = v2_200 + bernogauss_conv;
+v2B_200 = v2_200 + bernogauss_conv';
 
 simuMNMA_200 = [];
 
@@ -87,7 +87,6 @@ end
 
 % --> Resample to 1000Hz
 simuMNMA = [];
-v2 = [];
 for ii = 1:3
     simuMNMA(ii,:) = resample(simuMNMA_200(ii,:), 1000, 200);
 end
