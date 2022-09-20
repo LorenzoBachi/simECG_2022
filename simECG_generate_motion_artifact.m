@@ -1,4 +1,4 @@
-function [simuMA] = simECG_generate_motion_artifact(ecgParameters, noiseRMS, ecgLength)
+function [simuMA] = simECG_generate_motion_artifact(ecgLength,ecgParameters, noiseRMS)
 % INPUTS:
 % - successProb : the probability of success, i.e., spikes 
 
@@ -18,37 +18,22 @@ function [simuMA] = simECG_generate_motion_artifact(ecgParameters, noiseRMS, ecg
 % - AR_MN is a library of AR(4) coefficients obtained from 25 3-lead muscle
 % noise recordings.
 
-if  ~isfield(ecgParameters,'sigmas') %no previous simulated muscular noise
-    ecgParameters.sigmas.sigmav = (0.03*noiseRMS)*1e3; %in uV;
-    ecgParameters.sigmas.sigmaw = (0.03*noiseRMS)*1e3; %in uV;
+if  ~isfield(ecgParameters,'sigmav') %no previous simulated muscular noise
+    ecgParameters.sigmav = (0.03*noiseRMS)*1e3; %in uV;
 end
 
-load("DATA_AR_MN_Dictionary.mat"); %parameters were calculated with signals in uV
-
-% The coefficient are selected randomly.
-if ecgParameters.MA_Flag %3 VCG leads or 1-lead
-    ar_coeffs = squeeze(AR_MN(randi([1, size(AR_MN, 1)]), :, randi([1, size(AR_MN, 3)])));
+if ecgParameters.MA_Flag %Thumb-ECG
     L = 1;
-else
-    ar_coeffs = squeeze(AR_MN(randi([1, size(AR_MN, 1)]), :, :));
+else %3 VCG leads or 1-lead
     L = 3;
 end
 
-N200 = ceil(ecgLength/5);
-[bernogauss] = simECG_Bernoulli_Gaussian(N200, ecgParameters.MA_Prob, ecgParameters.sigmas.sigmav);
-[bernogauss_conv] = simECG_Bernoulli_Gaussian_convolution(N200, bernogauss);
-
-sigmaARinput = noiseRMS*0.3;
-
 for Li = 1:L
-    white_noise = normrnd(0, ecgParameters.sigmas.sigmaw, [N200, 1]); %in uV
-    ar_input_200 = (white_noise  + bernogauss_conv); %in uV
-    ar_model = idpoly(ar_coeffs(:,Li)', 'integratenoise', ecgParameters.MA_Flag);
-    simNoise_200 = sim(ar_model, ar_input_200)';
-    simuMA(Li,:) = resample(simNoise_200, 1000, 200);
+    bernogauss = simECG_Bernoulli_Gaussian(ecgLength, ecgParameters.MA_Prob, ecgParameters.sigmav);
+    bernogauss_conv(Li,:) = simECG_Bernoulli_Gaussian_convolution(ecgLength, bernogauss)'; %in uV
 end
 
-simuMA = simuMA(:,1:ecgLength).*1e-3; %in mV
+simuMA = bernogauss_conv.*1e-3; %in mV
 
 if ~ecgParameters.MA_Flag % Transform to the 15 leads
     simuMA_8 = leadcalc(simuMA,'stan');% V1,V2,V3,V4,V5,V6,I,II

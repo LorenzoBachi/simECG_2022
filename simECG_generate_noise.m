@@ -96,13 +96,13 @@ switch noiseType
         end
         
     case 6     %Simulated Muscular Noise
-        [multileadNoise, ecgParameters.sigmas] = simECG_generate_muscular_noise(ecgLength,ecgParameters, noiseRMS);%in mVolts
+        [multileadNoise, ecgParameters.sigmav] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS);%in mVolts
         
     case 7     %Real Exercise stress test noise (from R. Bailón)
-        multileadNoise = simECG_noise_real_EST(ecgLength,ecgParameters);
+        multileadNoise = simECG_noise_real_EST(ecgLength, ecgParameters);
         
     case 8     %Motion artifacts
-        multileadNoise = simECG_generate_motion_artifact(ecgParameters, noiseRMS, ecgLength);  
+        multileadNoise = simECG_generate_motion_artifact(ecgLength, ecgParameters, noiseRMS);%in mVolts
 end
 
 if noiseType > 0 && (noiseType ~=6 || noiseType ~=8)

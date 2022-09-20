@@ -1,4 +1,4 @@
-function [simuMN_15, info] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS)
+function [simuMN_15, sigmav] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %
@@ -30,11 +30,17 @@ else
     sigmax = u0*0.3;
 end
 
+if ecgParameters.MA_Flag %Thumb-ECG
+    L = 1;
+else %3 VCG leads or 1-lead
+    L = 3;
+end
+
 
 sigmav = sigmax.*sqrt(1-nu^2); %remember that the var_out = var_in/(1 - nu^2)
-v1 = randn(3, N200).*sigmav; %Frank leads
+v1 = randn(L, N200).*sigmav; %Frank leads
 
-out_1st_200 = zeros(3,N200);
+out_1st_200 = zeros(L,N200);
 
 for ii=1:N200-1
     out_1st_200(:,ii+1) = nu*out_1st_200(:,ii)+v1(:,ii);
@@ -56,7 +62,7 @@ aAR = squeeze(AR_MN(randi([1,25],1),:,:));
 nSteps = ceil(N200/(10*200)); %each 10 seconds
 pnew = zeros(nSteps,4,3);
 
-for Li = 1:3
+for Li = 1:L
     [z,p,k] = tf2zpk(1,aAR(:,Li)); %poles of random-selected AR coefficients
     pnew(:,1,Li) = RandomWalk(nSteps,p(1),0.02, 0.01);
     pnew(:,3,Li) = RandomWalk(nSteps,p(3),0.02, 0.01);
@@ -67,7 +73,10 @@ for Li = 1:3
     pEnd = 10*200;
     for ii = 1:nSteps
         [b,aARnew] = zp2tf(z,pnew(ii,:,Li),k);
-        simuMN_200(Li,pIni:pEnd) = filter(1,aARnew,v2_200(Li,pIni:pEnd)')';
+%         simuMN_200(Li,pIni:pEnd) = filter(1,aARnew,v2_200(Li,pIni:pEnd)')';
+        ar_model = idpoly(aARnew, 'integratenoise', ecgParameters.MA_Flag);
+        simuMN_200(Li,pIni:pEnd) = sim(ar_model, v2_200(Li,pIni:pEnd)')';
+        
         if ii == nSteps-1
             pIni = pEnd+1;
             pEnd = length(v2_200);
@@ -87,7 +96,7 @@ end
 % --> Resample to 1000Hz
 simuMN = [];
 v2 = [];
-for ii = 1:3
+for ii = 1:L
     simuMN(ii,:) = resample(simuMN_200(ii,:), 1000, 200);
 end
 if size(simuMN,2) > ecgLength
@@ -96,15 +105,14 @@ end
 
 simuMN = simuMN.*1e-3; %in mV
 
-info = [];
-info.sigmav = sigmav;
-info.sigmaw = sigmaw;
 
-% Transform to the 15 leads
-%1)Obtain augmented unipolar limb leads
-simuMN_8 = leadcalc(simuMN,'stan');% V1,V2,V3,V4,V5,V6,I,II
-simuMN_12 = leadcalc(simuMN_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
-
-simuMN_15=vertcat(simuMN_8(7,:),simuMN_8(8,:),simuMN_12(12,:),...
-    -simuMN_12(9,:),-simuMN_12(7,:),simuMN_12(11,:),simuMN_8(1:6,:),simuMN);
+if ~ecgParameters.MA_Flag % Transform to the 15 leads
+    simuMN_8 = leadcalc(simuMN,'stan');% V1,V2,V3,V4,V5,V6,I,II
+    simuMN_12 = leadcalc(simuMN_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
+    
+    simuMN_15=vertcat(simuMN_8(7,:),simuMN_8(8,:),simuMN_12(12,:),...
+        -simuMN_12(9,:),-simuMN_12(7,:),simuMN_12(11,:),simuMN_8(1:6,:),simuMN);
+    
+    simuMN = simuMN_15;
+end
 end
