@@ -22,7 +22,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 5*60;   %desired ECG length in seconds;
+sigLength = 0.5*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -57,14 +57,13 @@ BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [6];        % Type of noise. Vector with the number of all type of noise you want
+noiseType = [8];        % Type of noise. Vector with the number of all type of noise you want
 noiseRMS = [0.020]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 
 %Motion artifacts parameters
 ecgParameters.MA_Prob = 0.5; %the probability of success, i.e., spikes 
-ecgParameters.MA_sigBernoGauss = 0; % std used in the bernoulli process. In millivolts.
 ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
-    
+
 % 0 - no noise;
 % 1 - motion artifact;
 % 2 - electrode movement
@@ -73,11 +72,11 @@ ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 % 5 - bw + ma because em has residual ECG;
 % 6 - Simulated Muscular Noise;
 % 7 - Real Exercise stress test noise (from R. Bailón)
-% 8 - Motion artifacts
+% 8 - Simulated Motion artifacts
 
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
