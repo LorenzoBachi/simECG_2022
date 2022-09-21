@@ -18,7 +18,7 @@ function [simuMA] = simECG_generate_motion_artifact(ecgLength, ecgParameters, no
 % - AR_MN is a library of AR(4) coefficients obtained from 25 3-lead muscle
 % noise recordings.
 
-sigmay = noiseRMS; %in mV;
+sigmay = 0.03*noiseRMS; %in mV;
 
 if ecgParameters.MA_Flag %Thumb-ECG
     L = 1;
