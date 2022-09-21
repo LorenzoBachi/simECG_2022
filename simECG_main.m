@@ -48,7 +48,7 @@ load('ATDist.mat'); %comment for custom probability distribution
 %ATDist = ATDist.^(1/3);
 
 %--> Ventricular premature beats
-VPBph = simECG_random_number(180, 230);         % Number of VPBs per hour
+VPBph = 0;         % Number of VPBs per hour
 
 %--> Bigeminy, trigeminy
 BT_r = 0; % rate of bigeminy and trigeminy
@@ -58,11 +58,9 @@ BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigemin
 
 %--> Noise Parameters
 noiseType = [6, 8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS = [simECG_random_number(0.015, 0.03), simECG_random_number(0.09, 0.2)]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
-
+noiseRMS = [0.02, 0.1]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %Motion artifacts parameters
-ecgParameters.MA_Prob = simECG_random_number(0.3, 0.6); %the probability of success, i.e., spikes 
-
+ecgParameters.MA_Prob = 0; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (raking into account in simulated muscular noise)
 ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
