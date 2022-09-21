@@ -1,4 +1,4 @@
-function [simuMA] = simECG_generate_motion_artifact(ecgLength,ecgParameters, noiseRMS)
+function [simuMA] = simECG_generate_motion_artifact(ecgLength, ecgParameters, noiseRMS)
 % INPUTS:
 % - successProb : the probability of success, i.e., spikes 
 
@@ -18,10 +18,7 @@ function [simuMA] = simECG_generate_motion_artifact(ecgLength,ecgParameters, noi
 % - AR_MN is a library of AR(4) coefficients obtained from 25 3-lead muscle
 % noise recordings.
 
-if  ~isfield(ecgParameters,'sigmav') %no previous simulated muscular noise
-%     ecgParameters.sigmav = (0.03*noiseRMS)*1e3; %in uV;
-        ecgParameters.sigmav = 0.6; %in uV; 
-end
+sigmay = noiseRMS; %in mV;
 
 if ecgParameters.MA_Flag %Thumb-ECG
     L = 1;
@@ -30,11 +27,11 @@ else %3 VCG leads or 1-lead
 end
 
 for Li = 1:L
-    bernogauss = simECG_Bernoulli_Gaussian(ecgLength, ecgParameters.MA_Prob, ecgParameters.sigmav);
-    bernogauss_conv(Li,:) = simECG_Bernoulli_Gaussian_convolution(ecgLength, bernogauss)'; %in uV
+    bernogauss = simECG_Bernoulli_Gaussian(ecgLength, ecgParameters.MA_Prob, sigmay);
+    bernogauss_conv(Li,:) = simECG_Bernoulli_Gaussian_convolution(ecgLength, bernogauss)';
 end
 
-simuMA = bernogauss_conv.*1e-3; %in mV
+simuMA = bernogauss_conv; %in mV
 
 if ~ecgParameters.MA_Flag % Transform to the 15 leads
     simuMA_8 = leadcalc(simuMA,'stan');% V1,V2,V3,V4,V5,V6,I,II

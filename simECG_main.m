@@ -22,7 +22,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 0.5*60;   %desired ECG length in seconds;
+sigLength = 2*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -48,7 +48,7 @@ load('ATDist.mat'); %comment for custom probability distribution
 %ATDist = ATDist.^(1/3);
 
 % Ventricular premature beats
-VPBph = 300;         % Number of VPBs per hour
+VPBph = 0;         % Number of VPBs per hour
 
 % Bigeminy, trigeminy
 BT_r = 0; % rate of bigeminy and trigeminy
@@ -57,8 +57,8 @@ BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [6];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS = [0.020]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseType = [8];        % Type of noise. Vector with the number of all type of noise you want
+noiseRMS = [0.08]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 
 %Motion artifacts parameters
 ecgParameters.MA_Prob = 0.5; %the probability of success, i.e., spikes 
@@ -78,7 +78,7 @@ ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 
 %--> Exercise stress test parameters %CPerez 03/2022
-ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022

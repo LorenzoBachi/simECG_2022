@@ -1,4 +1,4 @@
-function [simuMN_15, sigmav] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS)
+function [simuMN_15] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %

@@ -15,14 +15,18 @@ h(n) = a1.^(-n);
 n = K:N;
 h(n) = a1.^(-(K-1)) * (a2.^(n-K));
 h = h/(max(abs(h)));
-if inds ~= 0
-    for q = 1:length(inds)
-        temp = zeros(len, 1);
-        temp(inds(q)) = bernogauss(inds(q));
-        temp = conv(temp, h, 'same');
-        bernogauss_conv  = bernogauss_conv + temp;
-    end
-end
+
+
+bernogauss_conv = conv(bernogauss, h, 'same'); %Changes CPerez
+
+% if inds ~= 0
+%     for q = 1:length(inds)
+%         temp = zeros(len, 1);
+%         temp(inds(q)) = bernogauss(inds(q));
+%         temp = conv(temp, h, 'same');
+%         bernogauss_conv  = bernogauss_conv + temp;
+%     end
+% end
 
 end
 
