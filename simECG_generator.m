@@ -115,6 +115,7 @@ switch onlyRR
         simECGdata.multileadVA = multileadVA;
         simECGdata.multileadAA = multileadAA;
         simECGdata.multileadNoise = multileadNoise;
+        simECGdata.multileadNoise_All = multileadNoise_All;
         simECGdata.QRSindex = QRSindex;
         simECGdata.TendIndex = TendIndex;
         simECGdata.targets_beats = targets_beats;
