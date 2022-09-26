@@ -78,8 +78,8 @@ ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 %--> Exercise stress test parameters %CPerez 03/2022
 ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
-    ecgParameters.Basal = randi([2,4],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
-    ecgParameters.Exercise = randi([7,10],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
+    ecgParameters.Basal = randi([1,3],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
+    ecgParameters.Exercise = randi([7,12],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
     ecgParameters.Recovery = randi([3,5],1)*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
     ecgParameters.Basal2 = randi([1,2],1)*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
     
