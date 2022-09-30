@@ -308,7 +308,7 @@ while t<=sigLengthMs
             % beat annotation
             kann=kann+1;
             annTime(kann) = round(t);
-            annBeats(kann) = beatCodes(2);
+            annBeats(kann) = beatCodes(1);
             annRhythm{kann} = [];
             % update targets array
             targets_beats(k) = 2;
@@ -416,9 +416,9 @@ while t<=sigLengthMs
             sp(c_SR:end) = sp(c_SR:end) + t + round( (rrtemp + rr_sr(c_SR))* 1000 ) - sp(c_SR);
             % beat annotation
             kann=kann+1;
-            annTime(kann,1) = round(t);
-            annBeats(kann,1) = beatCodes(2);
-            annRhythm{kann,1} = [];
+            annTime(kann) = round(t);
+            annBeats(kann) = beatCodes(2);
+            annRhythm{kann} = [];
         case 4
             % BT
             if ps ~= 4
@@ -484,9 +484,9 @@ while t<=sigLengthMs
                 sp(c_SR:end) = sp(c_SR:end) + t-sp(c_SR);
                 % beat annotation
                 kann=kann+1;
-                annTime(kann,1) = round(t);
-                annBeats(kann,1) = beatCodes(3);
-                annRhythm{kann,1} = [];
+                annTime(kann) = round(t);
+                annBeats(kann) = beatCodes(3);
+                annRhythm{kann} = [];
                 % update targets array
                 targets_beats(k) = 4;
                 % update the BT minimum duration variable
@@ -532,9 +532,9 @@ while t<=sigLengthMs
             sp(c_SR:end) = sp(c_SR:end) + t-sp(c_SR);
             % beat annotation
             kann=kann+1;
-            annTime(kann,1) = round(t);
-            annBeats(kann,1) = beatCodes(3);
-            annRhythm{kann,1} = [];
+            annTime(kann) = round(t);
+            annBeats(kann) = beatCodes(3);
+            annRhythm{kann} = [];
             % update targets array
             targets_beats(k) = 4;
         case 6
@@ -546,9 +546,9 @@ while t<=sigLengthMs
             t = t + round(rr(k)*1000);
             % beat annotation
             kann=kann+1;
-            annTime(kann,1) = round(t);
-            annBeats(kann,1) = beatCodes(3);
-            annRhythm{kann,1} = [];
+            annTime(kann) = round(t);
+            annBeats(kann) = beatCodes(3);
+            annRhythm{kann} = [];
             % update targets array
             targets_beats(k) = 4;
         case 7
@@ -569,9 +569,9 @@ while t<=sigLengthMs
             sp(c_SR:end) = sp(c_SR:end) + t-sp(c_SR);
             % beat annotation
             kann=kann+1;
-            annTime(kann,1) = round(t);
-            annBeats(kann,1) = beatCodes(3);
-            annRhythm{kann,1} = [];
+            annTime(kann) = round(t);
+            annBeats(kann) = beatCodes(3);
+            annRhythm{kann} = [];
             % update targets array
             targets_beats(k) = 4;
     end
@@ -582,7 +582,7 @@ rr = rr(1:k);
 state_history = state_history(1:k);
 annTime = annTime(1:kann);
 annBeats = annBeats(1:kann);
-annRhythm = annRhythm{1:kann};
+annRhythm = annRhythm(1:kann);
 
 %% Number and boundaries of PAF episodes
 k = 1;
