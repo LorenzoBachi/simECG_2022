@@ -539,7 +539,7 @@ while t<=sigLengthMs
             targets_beats(k) = 4;
         case 6
             % Isolated VPB during AF - same RR of Corino's model
-            rrtemp = rr_af(c_AF) * beta_p;
+            rrtemp = rr_af(c_AF);
             % insert ventricular beat
             rr(k) = rrtemp;
             % update time counter
