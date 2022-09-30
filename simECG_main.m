@@ -22,7 +22,7 @@ clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 2*60;   %desired ECG length in seconds;
+sigLength = 10*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -102,8 +102,7 @@ clc
 if medEpis < 1, medEpis = 1; end
 if BT_medEpis < 1, BT_medEpis = 1; end
 arrhythmiaParameters.AFburden = AFburden;
-stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
-arrhythmiaParameters.stayInAF = stayInAF;
+arrhythmiaParameters.medEpis = medEpis;
 arrhythmiaParameters.APBph = APBph;
 arrhythmiaParameters.ATDist = ATDist;
 arrhythmiaParameters.BT_r = BT_r;

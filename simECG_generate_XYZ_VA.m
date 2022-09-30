@@ -16,11 +16,11 @@ F = 1;                          % heart rate
 teta0 = -pi/2;                  % initial phase of the ECG
 
 % Increasing QRS complex maximum amplitude
-A = 1.25; 
+A = 1.5; 
 asf=zeros(1,6);
 for k=1:6
     %amplitude scaling factor
-    asf(k) = max(min(rand*A + (0.5*(rand-0.5)),A),0); % 25% bounded variation around selected value
+    asf(k) = max(min(f + (1*(rand-0.5)),A),0); % 50% bounded variation around selected value
 end
 
 %% QRS
@@ -28,18 +28,15 @@ Qw = simECG_random_number(0.05, 0.08);
 Rw = simECG_random_number(0.05, 0.08);
 Sw = simECG_random_number(0.05, 0.08);
 
-% alphaiQRS.x = [ -0.05+(-0.4*asf(1))     0.4+(1.5*asf(2))    0 ];
-alphaiQRS.x = [ -0.4+(abs(-0.4 + 0.05)*asf(1))     0.4+(1.5*asf(2))    0 ];
+alphaiQRS.x = [ -0.05+((-0.4+0.05)*asf(1))      0.4+((1.5-0.4)*asf(2))      0 ];
 biQRS.x     = [Qw    Rw    Sw];
 tetaiQRS.x  = [-0.1    0    0.1];
 
-% alphaiQRS.y = [ 0                       0.1+(0.7*asf(3))    -0.05+(-0.3*asf(4)) ];
-alphaiQRS.y = [ 0                       0.1+(0.7*asf(3))    -0.3+(abs(-0.3 + 0.05)*asf(4)) ];
+alphaiQRS.y = [ 0                               0.1+((0.7-0.1)*asf(3))      -0.05+((-0.3+0.05)*asf(4)) ];
 biQRS.y     = [Qw   Rw   Sw];
 tetaiQRS.y  = [-0.1   0   0.1];
 
-% alphaiQRS.z = [ -0.05+(-0.4*asf(5))     0                   0.1+(1*asf(6)) ];
-alphaiQRS.z = [ -0.4+(abs(-0.4 + 0.05)*asf(5))     0                   0.1+(1*asf(6)) ];
+alphaiQRS.z = [ -0.05+((-0.4+0.05)*asf(5))     0                            0.1+((1-0.1)*asf(6)) ];
 biQRS.z     = [Qw   Rw  Sw];
 tetaiQRS.z  = [ -0.1   0   0.1];
 

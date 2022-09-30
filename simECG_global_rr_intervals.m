@@ -44,7 +44,7 @@ ecgParameters.Fr = [];
 
 % fetching simulation parameters
 AFburden = arrhythmiaParameters.AFburden;
-stayInAF = arrhythmiaParameters.stayInAF;
+medEpis = arrhythmiaParameters.medEpis;
 APBph = arrhythmiaParameters.APBph;
 ATDist = arrhythmiaParameters.ATDist;
 VPBph = arrhythmiaParameters.VPBph;
@@ -182,6 +182,7 @@ end
 sN = {'1';'2';'3';'4';'5';'6';'7'};
 
 % Probabilities from previous version
+stayInAF = 1-log(2)/(medEpis);	% Probability to stay in AF state
 goToNS = 1-stayInAF;
 goToAF = (goToNS*AFburden)/(1-AFburden);
 
@@ -537,15 +538,8 @@ while t<=sigLengthMs
             % update targets array
             targets_beats(k) = 4;
         case 6
-            % Isolated VPB during AF
-            % prematurity factor
-            beta_p = 0.55 + rand*0.4;
-            % VPBs should not happen too close to other beats in AF
+            % Isolated VPB during AF - same RR of Corino's model
             rrtemp = rr_af(c_AF) * beta_p;
-            while rrtemp < 0.250
-                beta_p = 0.55 + rand*0.4;
-                rrtemp = rr_af(c_AF) * beta_p;
-            end
             % insert ventricular beat
             rr(k) = rrtemp;
             % update time counter
