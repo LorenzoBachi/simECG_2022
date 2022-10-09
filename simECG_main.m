@@ -57,10 +57,10 @@ BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [6];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS = [0.02]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseType = [6 8];        % Type of noise. Vector with the number of all type of noise you want
+noiseRMS = [0.02 0.1]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %Motion artifacts parameters
-ecgParameters.MA_Prob = 0; %the probability of success, i.e., spikes 
+ecgParameters.MA_Prob = 0.4; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (raking into account in simulated muscular noise)
 ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
@@ -86,8 +86,8 @@ if ecgParameters.ESTflag
     ecgParameters.Duration = ecgParameters.Basal +ecgParameters.Exercise + ecgParameters.Recovery + ecgParameters.Basal2; %Duration of Exercise Stress Test in seconds. %Cris 04/2022
     ecgParameters.peak = ecgParameters.Basal +ecgParameters.Exercise;    % peak of Exercise Stress Test in seconds. %Cris 04/2022
     sigLength =  ecgParameters.Duration;
-    ecgParameters.RRini = 60/randi([55,70],1);    % onset HR express according to RR in seconds. %Cris 04/2022
-    ecgParameters.RRpeak = 60/randi([165,180],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
+    ecgParameters.RRini = 60/randi([55,65],1);    % onset HR express according to RR in seconds. %Cris 04/2022
+    ecgParameters.RRpeak = 60/randi([170,185],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
     ecgParameters.RRend = ecgParameters.RRini*1.2;    % final HR express according to RR in seconds. %Cris 04/2022
     
     ecgParameters.Frini = simECG_random_number(0.25, 0.35);    % onset Respiratory frequency in Hz. %Cris 04/2022
