@@ -268,14 +268,14 @@ while t<=sigLengthMs
             if rc~=1
                 % rhythm annotation - N
                 kann=kann+1;
-                annTime(kann) = t + round((rr(k)*1000)/2);
+                annTime(kann) = t + ceil((rr(k)*1000)/2);
                 annBeats(kann) = beatCodes(end);
                 annRhythm{kann}= rhythmCodes(1);
                 % rhythm check
                 rc = 1;
             end
             % update time counter
-            t = t + round(rr(k)*1000);
+            t = t + ceil(rr(k)*1000);
             % sp series is adjusted
             sp(c_SR:end) = sp(c_SR:end) + t-sp(c_SR);
             % increase SR counter
