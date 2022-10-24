@@ -295,7 +295,7 @@ switch realVAon %%
     case 0
         %CPerez 05/2022
         %Include respiration
-        [Q] = simECG_rotation_angles_XYZ_v2( ecgParameters.Fr, T, Fs, Zr, ecgParameters);
+        [Q] = simECG_rotation_angles_XYZ_v2( ecgParameters.Fr, T, Fs, Zr);
         
         for t = 1 : ecgLength
             pqrstResampled(:,t) = Q(:,:,t)*pqrstResampled(:,t);

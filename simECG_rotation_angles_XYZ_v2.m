@@ -1,4 +1,4 @@
-function [ Q, phiX, phiY, phiZ] = simECG_rotation_angles_XYZ_v2( Fr, T, Fs, Zr, ecgParameters)
+function [ Q, phiX, phiY, phiZ] = simECG_rotation_angles_XYZ_v2( Fr, T, Fs, Zr)
 %% Rotation matrix Q with time-varying angles (phiX(n), phiY(n), phiZ(n)) 
 % Fr : Respiratory Pattern (in Hz)
 % Tr : Time vector for Fr (in sec)
@@ -45,7 +45,8 @@ h = pi/180;% Rotation angle in radians
 for t = 1 : length(phiX)
     Qx = [1 0 0; 0 cos(h*phiX(t)) sin(h*phiX(t)); 0 -sin(h*phiX(t)) cos(h*phiX(t))];
     Qy = [cos(h*phiY(t)) 0 sin(h*phiY(t)); 0 1 0 ; -sin(h*phiY(t)) 0 cos(h*phiY(t))];
-    Qz = [cos(h*phiZ(t)) sin(h*phiZ(t)) 0 ; -sin(h*phiZ(t)) 0 cos(h*phiZ(t)) ; 0 0 1];
+    %     Qz = [cos(h*phiZ(t)) sin(h*phiZ(t)) 0 ; -sin(h*phiZ(t)) 0 cos(h*phiZ(t)) ; 0 0 1];
+    Qz = [cos(h*phiZ(t)) -sin(h*phiZ(t)) 0 ; sin(h*phiZ(t)) cos(h*phiZ(t)) 0; 0 0 1];
     Q(:,:,t) = Qx*Qy*Qz;
 end
 
