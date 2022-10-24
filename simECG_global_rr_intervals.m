@@ -109,7 +109,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
         end
         
         % Generate atrial fibrillation pacing activity
-        afLength = round(AFburden*rrLength);
+        afLength = rrLength;
         if realRRon == 1 % Use real RR series
             rr_af = simECG_get_real_RR_intervals(1, afLength);  %atrial fibrillation rr series
         else
@@ -289,6 +289,10 @@ while t<=sigLengthMs
             targets_beats(k) = 1;
         case 2
             % AF
+            % avoid too large RR intervals in AF
+            while rr_af(c_AF)>1.8
+                c_AF = c_AF + 1;
+            end
             % insert af beat from Corino's AV model
             rr(k) = rr_af(c_AF);
             % check if rhythm annotation should change
@@ -321,7 +325,8 @@ while t<=sigLengthMs
                 d = x(1);
                 if d == 1
                     % Isolated APB
-                    apbtype = randi([1,4]);
+                    ap = cumsum([0.3,0.3,0.3,0.1]);
+                    apbtype = find(rand<=ap,1);
                     switch apbtype
                         case 1 % APBs with sinus reset
                             % prematurity factor
@@ -502,7 +507,8 @@ while t<=sigLengthMs
             end
         case 5
             % Isolated VPB
-            vpbtype = randi([1,3]);
+            vp = cumsum([0.475,0.475,0.05]);
+            vpbtype = find(rand<=vp,1);
             switch vpbtype
                 case 1 % VPBs with full compensatory pause
                     % prematurity factor

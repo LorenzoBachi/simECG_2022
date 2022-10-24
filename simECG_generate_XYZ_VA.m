@@ -16,9 +16,13 @@ F = 1;                          % heart rate
 teta0 = -pi/2;                  % initial phase of the ECG
 
 %% QRS
-Qw = simECG_random_number(0.05, 0.08);
-Rw = simECG_random_number(0.05, 0.08);
-Sw = simECG_random_number(0.05, 0.08);
+
+% Incresing QRS complex width
+W = 0.05; %rand * 0.03;
+
+Qw = simECG_random_number(0.05, 0.08)+W;
+Rw = simECG_random_number(0.05, 0.08)+W;
+Sw = simECG_random_number(0.05, 0.08)+W;
 
 % Increasing QRS complex maximum amplitude
 A = 1.5; 
@@ -30,26 +34,26 @@ for k=1:6
 end
 
 alphaiQRS.x = [ -0.05+((-0.4+0.05)*asf(1))      0.4+((1.5-0.4)*asf(2))      0 ];
-biQRS.x     = [Qw    Rw    Sw];
-tetaiQRS.x  = [-0.1    0    0.1];
+biQRS.x     = [Qw                               Rw                          Sw];
+tetaiQRS.x  = [-0.1-(W/1.2)                     0                           0.1+(W/1.2)];
 
 alphaiQRS.y = [ 0                               0.1+((0.7-0.1)*asf(3))      -0.05+((-0.3+0.05)*asf(4)) ];
-biQRS.y     = [Qw   Rw   Sw];
-tetaiQRS.y  = [-0.1   0   0.1];
+biQRS.y     = [Qw                               Rw                          Sw];
+tetaiQRS.y  = [-0.1-(W/1.2)                     0                           0.1+(W/1.2)];
 
-alphaiQRS.z = [ -0.05+((-0.4+0.05)*asf(5))     0                            0.1+((1-0.1)*asf(6)) ];
-biQRS.z     = [Qw   Rw  Sw];
-tetaiQRS.z  = [ -0.1   0   0.1];
+alphaiQRS.z = [ -0.05+((-0.4+0.05)*asf(5))      0                            0.1+((1-0.1)*asf(6)) ];
+biQRS.z     = [Qw                               Rw                           Sw];
+tetaiQRS.z  = [ -0.1-(W/1.2)                    0                           0.1+(W/1.2)];
 
 %% T wave
 Tw = simECG_random_number(0.5, 0.7);
 
-% Txa = simECG_random_number(0.02, 0.12);
-% Tya = simECG_random_number(0.01, 0.05);
-% Tza = simECG_random_number(-0.02, -0.1);
-Txa = simECG_random_number(0.02, 0.08);
-Tya = simECG_random_number(0.01, 0.03);
-Tza = simECG_random_number(-0.02, -0.06);
+Txa = simECG_random_number(0.02, 0.12);
+Tya = simECG_random_number(0.01, 0.05);
+Tza = simECG_random_number(-0.02, -0.1);
+% Txa = simECG_random_number(0.02, 0.08);
+% Tya = simECG_random_number(0.01, 0.03);
+% Tza = simECG_random_number(-0.02, -0.06);
 
 alphaiT.x = [Txa   2*Txa   3*Txa];
 biT.x     = [Tw     Tw/2    Tw/4];

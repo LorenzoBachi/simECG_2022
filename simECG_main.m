@@ -18,11 +18,11 @@
 
 % ECG is simulated @1 KHz.
 
-clear; clc;
+%clear; clc;
 
 %% Initial parameters
 %--> General Parameters
-sigLength = 1*60;   %desired ECG length in seconds;
+sigLength = 5*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -30,8 +30,8 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 ecgParameters.fs = 1000; %sampling frequency
 
 %--> Atrial fibrillation
-medEpis = 10;      % Median episode length > in beats <
-AFburden = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
+medEpis = 200;      % Median episode length > in beats <
+AFburden = 0.6;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 
 %--> Atrial tachycardia
 APBph = 0;         % Number of APBs per hour
@@ -46,22 +46,24 @@ load('ATDist.mat'); %comment for custom probability distribution
 %ATDist = sqrt(ATDist);
 %ATDist = ones(1,50);
 %ATDist = ATDist.^(1/3);
+ATDist = zeros(1,50);
+ATDist(1) = 1;
 
 %--> Ventricular premature beats
 VPBph = 0;         % Number of VPBs per hour
 
 %--> Bigeminy, trigeminy
 BT_r = 0; % rate of bigeminy and trigeminy
-BT_p = [1, 0]; % differential probability of bigeminy vs trigeminy
+BT_p = [15, 0]; % differential probability of bigeminy vs trigeminy
 %Setting both probabilities to zero deactivates the BT state
 BT_medEpis = 30;    % Median episode length (in beats) for bigeminy and trigeminy
 
 %--> Noise Parameters
-noiseType = [6 8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS = [0.02 0.1]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseType = [3, 6, 8];        % Type of noise. Vector with the number of all type of noise you want
+noiseRMS = [0.03, 0.02, 0.4]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %Motion artifacts parameters
-ecgParameters.MA_Prob = 0.4; %the probability of success, i.e., spikes 
-%Thumb-ECG parameter (raking into account in simulated muscular noise)
+ecgParameters.MA_Prob = 0.8; %the probability of success, i.e., spikes 
+%Thumb-ECG parameter (taking into account in simulated muscular noise)
 ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 % 0 - no noise;
@@ -98,9 +100,9 @@ end
 % Note: cannot select real atrial activity and synthetic ventricular activity
 
 %% ECG generator
-clc
 if medEpis < 1, medEpis = 1; end
 if BT_medEpis < 1, BT_medEpis = 1; end
+if ecgParameters.MA_Prob > 1, ecgParameters.MA_Prob = 1 / ecgParameters.MA_Prob; end
 arrhythmiaParameters.AFburden = AFburden;
 arrhythmiaParameters.medEpis = medEpis;
 arrhythmiaParameters.APBph = APBph;
@@ -113,14 +115,12 @@ if arrhythmiaParameters.APBph >0
 end
 arrhythmiaParameters.VPBph = VPBph;
 
-
 for nr = 1:1
-
-[simECGdata, initialParameters, annotations, ecgParameters] = simECG_generator(sigLength,realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, ecgParameters);
-fprintf('Simulation completed.\n')
-
+    
+    [simECGdata, initialParameters, annotations, ecgParameters] = simECG_generator(sigLength,realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, ecgParameters);
+    fprintf('Simulation completed.\n')
+    
 end
-
 
 %% Returned data and initial parameters
 % Initial parameters
@@ -147,7 +147,7 @@ xlabel('Time [s]'); ylabel('RR [ms]');
 xlim([0,sigLength]);
 %axis([135, 145, 300, 1300]);
 
-l=10;
+l=2;
 switch l
     case 1
         
@@ -178,6 +178,7 @@ linkaxes(ax,'x');
 
 set(gcf, 'Position', get(0, 'Screensize'));
 
+%{
 if ishandle(2), close(2); end
 figure(2);
 stem(cumsum(rr)./1000,targets_beats, 'r');
@@ -214,6 +215,7 @@ box on;
 
 linkaxes(ax2,'x');
 set(gcf, 'Position', get(0, 'Screensize'));
+%}
 
 %% Provisional code for the paper figures
 % clear simECGdata;
@@ -242,7 +244,5 @@ set(gcf, 'Position', get(0, 'Screensize'));
 % paper_example.limits = limits;
 % paper_example.dims = dims;
 %save('.\ECG simulator\paper_example1.mat','paper_example');
-
-
 
 
