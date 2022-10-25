@@ -18,7 +18,7 @@ teta0 = -pi/2;                  % initial phase of the ECG
 %% QRS
 
 % Incresing QRS complex width
-W = 0.05; %rand * 0.03;
+W = rand * 0.03;
 
 Qw = simECG_random_number(0.05, 0.08)+W;
 Rw = simECG_random_number(0.05, 0.08)+W;
