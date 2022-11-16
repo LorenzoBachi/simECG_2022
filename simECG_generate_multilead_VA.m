@@ -86,11 +86,16 @@ end
 %% Ventricular PQRST complexes generation
 % randomly select one of the 15 possible ventricular beat collections
 k = randi([1 15]);
+%ventricular QRS complexes increased width
+W = 0.2;
 switch realVAon
     case 0 % Generate ventricular complexes from the Hermite-logistic
         %function model
         load('DATA_ventricular_coefficients');
-        vpb = simECG_generate_XYZ_ventricular_VA(DATAcoefficients(k).fitCoeff,DATAcoefficients(k).J);
+        fitCoeff = DATAcoefficients(k).fitCoeff;
+        fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
+        fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
+        vpb = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAcoefficients(k).J);
         vpb_R = DATAcoefficients(k).R;
     case 1 % Load random patch of ventricular PQRST complexes from
         %Alcaraz's Database
@@ -113,7 +118,7 @@ if Nbvt > Nvp
 end
 % amplitude factors for each VPB
 vpb_amp = zeros(1,Nbvt);
-f0 = (1.5 + 1*rand);
+f0 = 2; %(1.5 + 1*rand);
 normf = mean(rms(squeeze(mean(pqrst,2)),2));
 for k = 1:Nbvt
     f = f0 * ( normf / mean(rms(squeeze(vpb(:,k,:)),2)) );

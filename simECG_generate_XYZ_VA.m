@@ -30,30 +30,42 @@ f = rand * A;
 asf=zeros(1,6);
 for k=1:6
     %amplitude scaling factor
-    asf(k) = max(min(f + (1*(rand-0.5)),A),0); % 50% bounded variation around selected value
+    asf(k) = max(min(f + (0.25*(rand-0.5)),A),0); % 25% bounded variation around selected value
 end
 
 alphaiQRS.x = [ -0.05+((-0.4+0.05)*asf(1))      0.4+((1.5-0.4)*asf(2))      0 ];
 biQRS.x     = [Qw                               Rw                          Sw];
-tetaiQRS.x  = [-0.1-(W/1.2)                     0                           0.1+(W/1.2)];
+tetaiQRS.x  = [-0.1-(W*1.2)                     0                           0.1+(W*1.2)];
 
 alphaiQRS.y = [ 0                               0.1+((0.7-0.1)*asf(3))      -0.05+((-0.3+0.05)*asf(4)) ];
 biQRS.y     = [Qw                               Rw                          Sw];
-tetaiQRS.y  = [-0.1-(W/1.2)                     0                           0.1+(W/1.2)];
+tetaiQRS.y  = [-0.1-(W*1.2)                     0                           0.1+(W*1.2)];
 
 alphaiQRS.z = [ -0.05+((-0.4+0.05)*asf(5))      0                            0.1+((1-0.1)*asf(6)) ];
 biQRS.z     = [Qw                               Rw                           Sw];
-tetaiQRS.z  = [ -0.1-(W/1.2)                    0                           0.1+(W/1.2)];
+tetaiQRS.z  = [ -0.1-(W*1.2)                    0                           0.1+(W*1.2)];
 
 %% T wave
 Tw = simECG_random_number(0.5, 0.7);
 
-Txa = simECG_random_number(0.02, 0.12);
-Tya = simECG_random_number(0.01, 0.05);
-Tza = simECG_random_number(-0.02, -0.1);
+% larger T waves
+% Txa = simECG_random_number(0.02, 0.12);
+% Tya = simECG_random_number(0.01, 0.05);
+% Tza = simECG_random_number(-0.02, -0.1);
+% reduced T waves
 % Txa = simECG_random_number(0.02, 0.08);
 % Tya = simECG_random_number(0.01, 0.03);
 % Tza = simECG_random_number(-0.02, -0.06);
+if f>=0.5 % T wave amplitude depends on QRS amplitude 
+    Txa = simECG_random_number(0.06, 0.12);
+    Tya = simECG_random_number(0.026, 0.05);
+    Tza = simECG_random_number(-0.052, -0.1);
+else
+    Txa = simECG_random_number(0.02, 0.08);
+    Tya = simECG_random_number(0.01, 0.034);
+    Tza = simECG_random_number(-0.02, -0.068);
+end
+    
 
 alphaiT.x = [Txa   2*Txa   3*Txa];
 biT.x     = [Tw     Tw/2    Tw/4];
