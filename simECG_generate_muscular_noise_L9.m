@@ -1,4 +1,4 @@
-function [simuMN_15] = simECG_generate_muscular_noise(ecgLength, ecgParameters, noiseRMS)
+function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, ecgParameters, noiseRMS)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %
@@ -6,7 +6,7 @@ function [simuMN_15] = simECG_generate_muscular_noise(ecgLength, ecgParameters, 
 
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal
-load('DATA_AR_MN_Dictionary_L8.mat');
+load('DATA_AR_MN_Dictionary_L9.mat');
 fs = ecgParameters.fs;
 v1 = [];
 N200 = ceil(ecgLength/5);
@@ -107,6 +107,6 @@ simuMN = simuMN(:,1:ecgLength).*1e-3; %in mV ->8-standard leads
 
 simuMN_12 = leadcalc(simuMN,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
 simuMN_xyz = leadcalc(simuMN,'hcuzst');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
-simuMN_15=vertcat(simuMN(7:8,:),simuMN_12(12,:),-simuMN_12(9,:),simuMN_12(7,:),simuMN_12(11,:),...
+simuMN_15=vertcat(simuMN(7:9,:),-simuMN_12(9,:),simuMN_12(7,:),simuMN_12(11,:),...
     simuMN(1:6,:),simuMN_xyz);
 end
