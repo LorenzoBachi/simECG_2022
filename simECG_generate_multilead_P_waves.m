@@ -1,4 +1,4 @@
-function multilead_P_waves = simECG_generate_multilead_P_waves(num)
+function [multilead_P_waves, P_wave_params ] = simECG_generate_multilead_P_waves(num)
 %
 % multilead_P_waves = simECG_generate_multilead_P_waves() returns multilead (15
 % lead) simulated P waves. P waves are simulated using Hermite functions as
@@ -42,6 +42,9 @@ kx2 = simECG_random_number(0, 0.02);
 bx0 = simECG_random_number(0.8, 0.9); %Cris 03/2022 
 bx1 = simECG_random_number(0.5, 0.9); %Cris 03/2022 
 bx2 = simECG_random_number(0.5, 0.9); %Cris 03/2022 
+% structure with P wave parameters
+P_wave_params(1) = kx0; P_wave_params(2) = kx1; P_wave_params(3) = kx2;
+P_wave_params(4) = bx0; P_wave_params(5) = bx1; P_wave_params(6) = bx2;
 
 % Get parameters for P wave in Frank lead Y
 ky0 = simECG_random_number(0.05, 0.125); %Cris 03/2022 
@@ -50,6 +53,8 @@ ky2 = simECG_random_number(0, 0.03);
 by0 = simECG_random_number(0.8, 0.9); %Cris 03/2022 
 by1 = simECG_random_number(0.5, 0.9); %Cris 03/2022 
 by2 = simECG_random_number(0.5, 0.9);%Cris 03/2022 
+P_wave_params(7) = ky0; P_wave_params(8) = ky1; P_wave_params(9) = ky2;
+P_wave_params(10) = by0; P_wave_params(11) = by1; P_wave_params(12) = by2;
 
 % Get parameters for P wave in Frank lead Z
 kz0 = simECG_random_number(-0.02, 0.02);  
@@ -58,6 +63,8 @@ kz2 = simECG_random_number(-0.02, 0);
 bz0 = simECG_random_number(0.5, 0.9); %Cris 03/2022 
 bz1 = simECG_random_number(0.7, 0.9); %Cris 03/2022 
 bz2 = simECG_random_number(0.6, 0.9); %Cris 03/2022 
+P_wave_params(13) = kz0; P_wave_params(14) = kz1; P_wave_params(15) = kz2;
+P_wave_params(16) = bz0; P_wave_params(17) = bz1; P_wave_params(18) = bz2;
 
 % Generate dominant frequency of P variability (between 1 and 3 Hz)
 fk0 = simECG_random_number(1, 3);
@@ -67,6 +74,9 @@ fk2 = simECG_random_number(1, 3);
 fb0 = simECG_random_number(1, 3);
 fb1 = simECG_random_number(1, 3);
 fb2 = simECG_random_number(1, 3);
+
+P_wave_params(19) = fk0; P_wave_params(20) = fk1; P_wave_params(21) = fk2;
+P_wave_params(22) = fb0; P_wave_params(23) = fb1; P_wave_params(24) = fb2;
 
 % Generate phase for each variability related frequency
 if rand(1,1)> 0.5

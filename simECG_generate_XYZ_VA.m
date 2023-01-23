@@ -18,19 +18,19 @@ teta0 = -pi/2;                  % initial phase of the ECG
 %% QRS
 
 % Incresing QRS complex width
-W = rand * 0.03;
+W = rand * 0.025;
 
 Qw = simECG_random_number(0.05, 0.08)+W;
 Rw = simECG_random_number(0.05, 0.08)+W;
 Sw = simECG_random_number(0.05, 0.08)+W;
 
 % Increasing QRS complex maximum amplitude
-A = 1.5; 
-f = rand * A;
+A = 1.25; 
+f = rand * A + 0.25;
 asf=zeros(1,6);
 for k=1:6
     %amplitude scaling factor
-    asf(k) = max(min(f + (0.25*(rand-0.5)),A),0); % 25% bounded variation around selected value
+    asf(k) = max(min(f + (0.2*(rand-0.5)),A),0); % 25% bounded variation around selected value
 end
 
 alphaiQRS.x = [ -0.05+((-0.4+0.05)*asf(1))      0.4+((1.5-0.4)*asf(2))      0 ];

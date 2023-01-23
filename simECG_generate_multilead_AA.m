@@ -1,4 +1,4 @@
-function multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, AFburden, ecgParameters)
+function multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, B_af, ecgParameters)
 % multileadAA = simECG_gen_multilead_AA() returns multilead (15 lead) atrial
 % activity. 
 %
@@ -13,11 +13,11 @@ function multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fib
 %Last update: CPerez 05/2022
 
 % Decide which rhythm type to generate
-if AFburden == 0
+if B_af == 0
     rhythmType = 0; % SR
-elseif AFburden == 1
+elseif B_af == 1
     rhythmType = 1; % AF
-elseif AFburden > 0 && AFburden < 1
+elseif B_af > 0 && B_af < 1
     rhythmType = 2; % PAF
 else
     error('AF burden must be a value between 0 and 1')
@@ -25,18 +25,31 @@ end
 
 disp('Generating atrial activity ...');
 
+% P wave parameter norm threshold which ensured that APBs have a different
+% enough P wave
+params_th = 6;
 multileadAA = zeros(15, ecgLength);
 % Generate atrial activity
 switch rhythmType
     case 0 % Entire signal is SR
        if realAAon == 0
            Nrr = length(targets_beats);
-           P_waves = simECG_generate_multilead_P_waves(Nrr); 
+           [P_waves, ~] = simECG_generate_multilead_P_waves(Nrr); 
+           template_S = squeeze(P_waves([1,2,7,8,9,10,11,12],1,:));
            
            % Replace P waves during atrial ectopic beats
            numABPs = length(find(targets_beats == 3));
            if numABPs > 0
-               P_waves_APBs = simECG_generate_multilead_P_waves(numABPs);
+               tot_corr = params_th;
+               while tot_corr>=params_th
+                   tot_corr = 0;
+                   [P_waves_APBs, ~] = simECG_generate_multilead_P_waves(numABPs);
+                   template_APB = squeeze(P_waves_APBs([1,2,7,8,9,10,11,12],1,:));
+                   for l = 1:8
+                       m = corrcoef(template_S(l,:),template_APB(l,:));
+                       tot_corr = tot_corr + abs(m(1,2));
+                   end
+               end
                iAPB = 1;
                for n = 1:Nrr 
                    if targets_beats(n) == 3
@@ -112,11 +125,22 @@ switch rhythmType
     case 2 % PAF
         Nrr = length(targets_beats);
         if realAAon == 0  % Synthetic atrial activity is prefered
-           P_waves = simECG_generate_multilead_P_waves(Nrr); 
+           [P_waves, ~] = simECG_generate_multilead_P_waves(Nrr); 
+           template_S = squeeze(P_waves([1,2,7,8,9,10,11,12],1,:));
+           
            % Replace P waves during atrial ectopic beats
            numABPs = length(find(targets_beats == 3));
            if numABPs > 0
-               P_waves_APBs = simECG_generate_multilead_P_waves(numABPs);
+               tot_corr = params_th;
+               while tot_corr>=params_th
+                   tot_corr = 0;
+                   [P_waves_APBs, ~] = simECG_generate_multilead_P_waves(numABPs);
+                   template_APB = squeeze(P_waves_APBs([1,2,7,8,9,10,11,12],1,:));
+                   for l = 1:8
+                       m = corrcoef(template_S(l,:),template_APB(l,:));
+                       tot_corr = tot_corr + abs(m(1,2));
+                   end
+               end
                iAPB = 1;
                for n = 1:Nrr 
                    if targets_beats(n) == 3
@@ -169,7 +193,9 @@ switch rhythmType
                if (targets_beats(p_num) == 2) ||...
                        ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2))
                    praIndex = QRSindex(p_num);
-                   while ( targets_beats(p_num) == 2 ) && ( p_num < Nrr )
+                   while ( (targets_beats(p_num) == 2) ||...
+                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2)) ) ...
+                       && ( p_num < Nrr )
                       p_num = p_num + 1;
                    end 
                    pabIndex = QRSindex(p_num);
@@ -196,9 +222,13 @@ switch rhythmType
                 multileadfWaves = f_waves(:,fStart+1:fStart+ecgLength);
             end 
             for p_num = 2:Nrr
-                if targets_beats(p_num) == 2
+                if (targets_beats(p_num) == 2) ||...
+                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2)) ||...
+                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num+1) == 2))
                     praIndex = QRSindex(p_num);
-                    while targets_beats(p_num) == 2 && p_num < Nrr
+                    while ( (targets_beats(p_num) == 2) ||...
+                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2)) ||...
+                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num+1) == 2)) ) && ( p_num < Nrr )
                         p_num = p_num + 1;
                     end 
                     if p_num>length(QRSindex)

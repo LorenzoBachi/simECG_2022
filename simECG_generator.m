@@ -55,12 +55,14 @@ function [simECGdata, initialParameters, annotations, ecgParameters] = simECG_ge
 
 disp('    ECG generator: simulation starting ...');
 
+if ecgParameters.MA_Prob > 1, ecgParameters.MA_Prob = 1 / ecgParameters.MA_Prob; end
+
 switch onlyRR
     case 1 % only RR intervals are generated
         % Generate initial parameters (fibrillatory frequency)
         fibFreqz = simECG_fibrillation_frequency();
         % Generate RR intervals
-        [rr,annTime,annType,annRhythm,targets_beats,pafBoundaries, pafEpisLength, ecgParameters,state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
+        [rr,annotations,targets_beats,ecgParameters,hrArray,state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
         rr(cumsum(rr)>sigLength)= [];
         rrLength = numel(rr);
         simECGdata.rr = rr;
@@ -70,21 +72,19 @@ switch onlyRR
         simECGdata.multileadNoise = [];
         simECGdata.QRSindex = [];
         simECGdata.targets_beats = targets_beats;
-        simECGdata.pafBoundaries = pafBoundaries;
-        simECGdata.pafEpisLength = pafEpisLength;
         simECGdata.ecgLength = [];
-
-        ecgParameters.fibFreqz = fibFreqz;
-        ecgParameters.rrLength = rrLength;
-        ecgParameters.realRRon = realRRon;
-        ecgParameters.realVAon = realVAon;
-        ecgParameters.realVAon = realAAon;
-        ecgParameters.noiseType = noiseType;
-        ecgParameters.noiseRMS = noiseRMS;
+        simECGdata.Fr = [];
+        simECGdata.poles = [];
+        simECGdata.state_history = state_history;
+        simECGdata.hrArray = hrArray;
         
-        annotations.annTime = annTime;
-        annotations.annType = annType;
-        annotations.annRhythm = annRhythm;
+        initialParameters.fibFreqz = fibFreqz;
+        initialParameters.rrLength = rrLength;
+        initialParameters.realRRon = realRRon;
+        initialParameters.realVAon = realVAon;
+        initialParameters.realVAon = realAAon;
+        initialParameters.noiseType = noiseType;
+        initialParameters.noiseRMS = noiseRMS;
         
     case 0 % multilead ECG is generated
         % Check for errors:
@@ -96,12 +96,12 @@ switch onlyRR
         % Generate initial parameters (fibrillatory frequency)
         fibFreqz = simECG_fibrillation_frequency();   
         % Generate RR intervals
-        [rrIn,annTime,annType,annRhythm,targets_beats,pafBoundaries, pafEpisLength, ecgParameters,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
+        [rrIn,annotations,targets_beats,ecgParameters,hrArray,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
         rrLength = numel(rrIn);
         % Generate multilead ventricular activity
         [QRSindex, TendIndex,rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, ecgParameters,state_history); %_QTC adde by Alba 19/03
         % Generate multilead atrial activity
-        multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.AFburden, ecgParameters);
+        multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.B_af, ecgParameters);
         % Generate multilead noise
         for ii = 1:numel(noiseType)
             [multileadNoise_All(:,:,ii), poles] = simECG_generate_noise(ecgLength, noiseType(ii), noiseRMS(ii), ecgParameters);
@@ -119,14 +119,13 @@ switch onlyRR
         simECGdata.QRSindex = QRSindex;
         simECGdata.TendIndex = TendIndex;
         simECGdata.targets_beats = targets_beats;
-        simECGdata.pafBoundaries = pafBoundaries;
-        simECGdata.pafEpisLength = pafEpisLength;
         simECGdata.state_history = state_history;
         simECGdata.ecgLength = ecgLength';
         simECGdata.Fr = ecgParameters.Fr';
         simECGdata.poles = poles;
-               
-
+        simECGdata.state_history = state_history;
+        simECGdata.hrArray = hrArray;
+        
         initialParameters.fibFreqz = fibFreqz;
         initialParameters.rrLength = rrLength;
         initialParameters.realRRon = realRRon;
@@ -134,10 +133,6 @@ switch onlyRR
         initialParameters.realVAon = realAAon;
         initialParameters.noiseType = noiseType;
         initialParameters.noiseRMS = noiseRMS;
-        
-        annotations.annTime = annTime;
-        annotations.annType = annType;
-        annotations.annRhythm = annRhythm;
         
 end
 

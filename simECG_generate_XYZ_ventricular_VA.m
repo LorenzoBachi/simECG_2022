@@ -4,7 +4,7 @@ function [vpb] = simECG_generate_XYZ_ventricular_VA(fitCoeff,J)
 % ventricular beats, generated from the Hermite and logistic function
 % coefficients resulting from fitting the VPB from Alzaraz database. The
 % fitting was performed according to Sörnmo et al. 1981 and Bock et al.,
-% 2021. Generated VPBs are 540 samples long at 500 Hz, in the Frank lead
+% 2021. Generated VPBs are 600 samples long at 1000 Hz, in the Frank lead
 % space.
 
 %get size of fitCoeff
@@ -12,13 +12,13 @@ dims = size(fitCoeff);
 %number of VPBs in patch
 N=dims(1);
 %preallocate result matrix
-vpb = zeros(3,N,540);
+vpb = zeros(N,8,600);
 %numer of Hermite functions used for QRS complex and T wave
 N_QRS = 6;
 N_T = 4;
 
 for k=1:N
-    for l=1:3
+    for l=1:8
         %global time vector
         t_all = 1:700;
         %QRS time vector
@@ -75,7 +75,7 @@ for k=1:N
         %combine Hermite and logistic functions
         x_hat = y_all_hat + e_all_hat;
         %the last padding section is discarded
-        vpb(l,k,:) = x_hat(1:540);
+        vpb(k,l,:) = x_hat(1:600);
     end
 end
 
