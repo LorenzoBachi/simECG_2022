@@ -22,8 +22,8 @@ sigmay = 0.03*noiseRMS; %in mV;
 
 if ecgParameters.MA_Flag %Thumb-ECG
     L = 1;
-else %3 VCG leads or 1-lead
-    L = 3;
+else %8 indipendent leads or 1-lead
+    L = 8;
 end
 
 for Li = 1:L
@@ -34,11 +34,12 @@ end
 simuMA = bernogauss_conv; %in mV
 
 if ~ecgParameters.MA_Flag % Transform to the 15 leads
-    simuMA_8 = leadcalc(simuMA,'stan');% V1,V2,V3,V4,V5,V6,I,II
+    simuMA_8 = simuMA; %leadcalc(simuMA,'stan');% V1,V2,V3,V4,V5,V6,I,II
     simuMA_12 = leadcalc(simuMA_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
+    simuMA_VCG = leadcalc(simuMA_8,'synt');
     
     simuMA_15 = vertcat(simuMA_8(7,:),simuMA_8(8,:),simuMA_12(12,:),...
-        -simuMA_12(9,:),-simuMA_12(7,:),simuMA_12(11,:),simuMA_8(1:6,:),simuMA);
+        -simuMA_12(9,:),-simuMA_12(7,:),simuMA_12(11,:),simuMA_8(1:6,:),simuMA_VCG);
     
     simuMA = simuMA_15;
 end

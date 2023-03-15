@@ -72,7 +72,7 @@ switch onlyRR
         simECGdata.multileadNoise = [];
         simECGdata.QRSindex = [];
         simECGdata.targets_beats = targets_beats;
-        simECGdata.ecgLength = [];
+        simECGdata.ecgLength = sigLength;
         simECGdata.Fr = [];
         simECGdata.poles = [];
         simECGdata.state_history = state_history;

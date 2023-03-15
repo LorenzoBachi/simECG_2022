@@ -58,8 +58,8 @@ d_bt = 8;    % Median episode length (in beats) for bigeminy and trigeminy
 % default from the MIt-BIH Arrhythmia Database: 8
 
 %% Ventricular Premature Beats
-B_vpb = 0;     % VPB burden
-vpb_p = [0,0,1]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
+B_vpb = 0.20;     % VPB burden
+vpb_p = [0.5,0.5,0]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
 multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
 
 %% Noise Parameters
@@ -100,6 +100,7 @@ if ecgParameters.ESTflag
     ecgParameters.Frpeak = simECG_random_number(0.65, 0.75);    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
     ecgParameters.Frend = simECG_random_number(0.25, 0.35);    % final Respiratory frequency in Hz. %Cris 04/2022
 end
+ecgParameters.multiform_vpbs = multiform_vpbs;
 
 %% ECG Generator
 arrhythmiaParameters.B_af = B_af;
@@ -136,8 +137,6 @@ ecgLength = simECGdata.ecgLength;            % ECG length in samples
 state_history = simECGdata.state_history;
 
 %% Plots
-
-multileadECG = ( 1 .* simECGdata.multileadVA) + ( 2 .* simECGdata.multileadAA ) + ( 1 .* simECGdata.multileadNoise ) ;
 
 if ishandle(1), clf(1); end
 figure(1);

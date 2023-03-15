@@ -244,14 +244,14 @@ T = sigLength;
 % average RR interval in SR
 d_RR_sr = 60/mean(hrArray);
 % average RR interval in AT
-d_RR_at = d_RR_sr / 1.55;
+d_RR_at = d_RR_sr ;
 % average RR interval in AF
 d_RR_af = 0.765;
 % average RR interval in BT
-d_RR_bt = d_RR_sr / 1.5; % now verified
+d_RR_bt = d_RR_sr ;
 % mean episode duration of a VPB event (NOTE: related to the dominant
 % rhythm!)
-d_vpb_sr = ( vpb_p(1)*2 + vpb_p(2)*1.5 + vpb_p(3)*1 ) / 1.1;
+d_vpb_sr = mean( vpb_p(1) + (vpb_p(2)*0.725) + (vpb_p(3)*0.6) );
 d_vpb_at = 1.5;
 d_vpb_af = 1;
 % sinus rhythm burden
@@ -433,7 +433,7 @@ while t<=sigLengthMs
         case 2
             % AF
             % sampling the atrial fibrillation episode length distribution
-            x = find(rand<=cumsum(dist_af));
+            x = find(rand<=cumsum(dist_af)) + 4;
             % duration is the first nonzero index of rand<=cumDist
             d = x(1);
             for c = 1:d
@@ -590,9 +590,11 @@ while t<=sigLengthMs
         case 4
             % BT
             % sampling the bigeminy/trigeminy episode length distribution
-            x = find(rand<=cumsum(dist_bt));
+            x = find(rand<=cumsum(dist_bt)) + 3;
             % duration is the first nonzero index of rand<=cumDist
             d = x(1);
+            % prematurity factor of the episode
+            beta_BT_base = 0.6 + rand*0.15;
             if (ps ~= 4)||(k==0)
                 % decision between trigeminy and bigeminy
                 x = rand;
@@ -617,7 +619,7 @@ while t<=sigLengthMs
                         d=4;
                     else
                         if mod(d,2)~=0
-                            if rand>05
+                            if rand>=05
                                 d=d+1;
                             else
                                 d=d-1;
@@ -661,13 +663,14 @@ while t<=sigLengthMs
                 else
                     % ventricular beat
                     % prematurity factor
-                    beta_BT_p = 0.75 + rand*0.1;
+                    beta_BT_p = beta_BT_base + ((rand-0.5)/10);
                     % rr interval of the apb
                     rr(k) = rr_sr(c_SR) * beta_BT_p;
                     % delay factor
-                    beta_BT_f = 1.1 + rand*0.2;
-                    % apb compensatory pause
-                    rr_sr(c_SR) = rr_sr(c_SR) * beta_BT_f;
+                    %beta_BT_f = 1.1 + rand*0.2;
+                    % vpb compensatory pause
+                    %rr_sr(c_SR) = rr_sr(c_SR) * beta_BT_f;
+                    rr_sr(c_SR) = (2*rr_sr(c_SR)) - rr(k);
                     % update time counter
                     t = t + round(rr(k)*1000);
                     % beat annotation
@@ -693,14 +696,14 @@ while t<=sigLengthMs
             switch vpbtype
                 case 1 % VPBs with full compensatory pause
                     % prematurity factor
-                    beta_VPB1_p = 0.55 + rand*0.4;
+                    beta_VPB1_p = 0.55 + rand*0.35;
                     % rr interval of the vpb
                     rrtemp = rr_sr(c_SR) * beta_VPB1_p;
                     % vpb compensatory pause
                     rr_sr(c_SR) = (2*rr_sr(c_SR)) - rrtemp;
                 case 2 % VPBs with non compensatory pause
                     % prematurity factor
-                    beta_VPB2_p = 0.55 + rand*0.4;
+                    beta_VPB2_p = 0.55 + rand*0.35;
                     % rr interval of the apb
                     rrtemp = rr_sr(c_SR) * beta_VPB2_p;
                 case 3 % Interpolated VPBs

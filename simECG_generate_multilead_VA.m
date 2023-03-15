@@ -93,52 +93,106 @@ D = [
     0.235  1.066   -0.132];
 
 %% Ventricular PQRST complexes generation
-% randomly select one of the 15 possible ventricular beat collections
-k=1; %randi([1 10]);
-disp(['Collection nr. ' num2str(k) ]);
+% Kors regression transformation
+K = transpose([ 0.380,  -0.070,   0.110;...
+    -0.070,   0.930,  -0.230;...
+    -0.130,   0.060,  -0.430;...
+    0.050,  -0.020,  -0.060;...
+    -0.010,  -0.050,  -0.140;...
+    0.140,   0.060,  -0.200;...
+    0.060,  -0.170,  -0.110;...
+    0.540,   0.130,   0.310]);
+%length of a ventricular beat buffer
+Lv = 800;
 %ventricular QRS complexes increased width
 W = rand * 0;
+%ventricular beat amplitude factor
+vaf = 1;
+%multiform VPBs?
+multiform_vpbs = ecgParameters.multiform_vpbs;
 switch realVAon
     case 0 % Generate ventricular complexes from the Hermite-logistic
         %function model
         load('DATA_ventricular_coefficients');
-        fitCoeff = DATAventricularCoefficients(k).fitCoeff;
-        fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
-        fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
-        vpb = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
-        vpb_R = DATAventricularCoefficients(k).R;
     case 1 % Load random patch of ventricular PQRST complexes from
         %Alcaraz's Database
         load('DATA_ventricular_real');
-        vpb = DATAventricularReal(k).qrst;
-        vpb_R = DATAventricularReal(k).R;
 end
-% length of the ventricular beat buffer
-Lv = length(squeeze(vpb(1,1,:)));
-% number of the ventricular beats of the selected collection
-Nvp = length(vpb(:,1,1));
 % number of ventricular beats that are present in the record
 Nbvt = sum(targets_beats==4);
-% if necessary, replicate the beats to reach the required number
-if Nbvt > Nvp
-    % number of required replications
-    rep = floor(Nbvt/Nvp);
-    for k = 1 : rep
-        vpb = [vpb; vpb];
+if Nbvt
+    if multiform_vpbs ~= 0
+        % multiform VPBs
+        vpb = zeros(Nbvt,8,Lv);
+        vpb_record_beat = zeros(2,Nbvt);
+        for b = 1:Nbvt
+            vpb_record_beat(1,b) = randi(10);
+            if vpb_record_beat(1,b)==10
+                vpb_record_beat(2,b) = randi(87);
+            else
+                vpb_record_beat(2,b) = randi(100);
+            end
+        end
+        bb = 0;
+        for k = 1:10
+            vpb_to_add = vpb_record_beat(:,vpb_record_beat(1,:)==k);
+            Nvpb_c = sum(vpb_record_beat(1,:)==k);
+            if Nvpb_c
+                switch realVAon
+                    case 0
+                        fitCoeff = DATAventricularCoefficients(k).fitCoeff;
+                        fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
+                        fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
+                        vpb0 = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
+                        vpb_R = DATAventricularCoefficients(k).R;
+                    case 1
+                        vpb0 = DATAventricularReal(k).qrst;
+                        vpb_R = DATAventricularReal(k).R;
+                end
+                for b = 1:Nvpb_c
+                    bb = bb + 1;
+                    vpb(bb,:,:) = vpb0(vpb_to_add(2,b),:,:) .* vaf;
+                end
+            end
+        end
+        rp = randperm(Nbvt);
+        vpb = vpb(rp,:,:);
+    else
+        % single VPB shape
+        vpb = zeros(Nbvt,8,Lv);
+        k = randi(10);
+        if k ==10
+            q = randi(87);
+        else
+            q = randi(100);
+        end
+        switch realVAon
+            case 0
+                fitCoeff = DATAventricularCoefficients(k).fitCoeff;
+                fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
+                fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
+                vpb0 = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
+                vpb_R = DATAventricularCoefficients(k).R;
+            case 1
+                vpb0 = DATAventricularReal(k).qrst;
+                vpb_R = DATAventricularReal(k).R;
+        end
+        for k = 1:Nbvt
+            vpb(k,:,:) = squeeze(vpb0(q,:,:)) .* vaf;
+        end
     end
+    vpb_15l = zeros(Nbvt,15,Lv);
+    for k = 1:Nbvt
+        vpb_15l(k,1:2,:) = vpb(k,1:2,:);
+        vpb_15l(k,3,:) = vpb(k,2,:) - vpb(k,1,:);
+        vpb_15l(k,4,:) = -vpb(k,1,:) + vpb(k,2,:)/2;
+        vpb_15l(k,5,:) =  vpb(k,1,:) - vpb(k,2,:)/2;
+        vpb_15l(k,6,:) =  vpb(k,2,:) - vpb(k,1,:)/2;
+        vpb_15l(k,7:12,:) = vpb(k,3:8,:);
+        vpb_15l(k,13:15,:) = K * squeeze(vpb(k,1:8,:));
+    end
+    v_idx = find(targets_beats == 4);
 end
-vpb = vpb(1:Nbvt,:,:);
-% amplitude factors for each VPB
-f0 = (1.5 + 0*rand);
-normf = mean(max((D*squeeze(mean(pqrst,2))).^2,[],2));
-for k = 1:Nbvt
-    f = f0 * ( normf / mean(max((squeeze(vpb(k,:,:))).^2,[],2)) );
-    vpb(k,:,:) =  f * (0.95 + rand*0.1) * vpb(k,:,:);
-    %Alcaraz: (randi(10*[0.8 2.5])/10) * sign(1.3+randn(1,1)) ;
-end
-%start from a random beat in the collection
-rp = randperm(Nbvt);
-vpb = vpb(rp,:,:);
 
 %% Activity generation
 
@@ -150,6 +204,7 @@ for lead = 1:numLeads %% Changed in v012020
     % counters for supraventricular and ventricular beat numbers
     ks = 0;
     kv = 0;
+    nVPB = 0;
     kv_history = ones(1,Nbvt);
     
     % extracting fiducial points location
@@ -238,12 +293,26 @@ for lead = 1:numLeads %% Changed in v012020
             % Ventricular beat - activity placed after respiration
             % correction
             % in bigeminy / trigeminy, the same VPB is used
-            if (state_history(max(beatNr-4,1))~=4)||(kv==0)
-                kv = kv + 1;
+            if ~((state_history(max(beatNr-4,1))==4)&&(kv>0))
+                if ~((state_history(beatNr-1)==state_history(beatNr))&&(state_history(beatNr)==5))
+                    kv = kv + 1;
+                end
             end
             % R wave fiducial point
             Rind = vpb_R;
-            kv_history(kv) = kv;
+            nVPB = nVPB + 1;
+            kv_history(nVPB) = kv;
+            vpb_temp = squeeze(vpb(kv_history(nVPB),:,:));
+            vpb_module = vecnorm(vpb_temp);
+            vpb_module = vpb_module / sum(vpb_module);
+            vpb_end = length(vpb_temp);
+            area = 0;
+            for v = length(vpb_module):-1:round(length(vpb_module)*0.5)
+                area = area + vpb_module(v);
+                if area >= 0.07
+                    vpb_end = v;
+                end
+            end
             QRSTcQ = vQRST;
             nn = length(QRSTcQ);
         end
@@ -261,6 +330,11 @@ for lead = 1:numLeads %% Changed in v012020
                 %                     QIndex = [QIndex data.];
                 TendIndex = [TendIndex size(ecgSig,2)+length(QRSTc)];
                 %rIndex = [rIndex (rIndex(1,end) + TQlength0 + length(QRSTc) - Rind + RindNext)];
+                if (state_history(beatNr-1)==state_history(beatNr))&&(state_history(beatNr)==5)
+                    if rr(beatNr+1)<vpb_end
+                        rr(beatNr+1) = vpb_end;
+                    end
+                end
                 rIndex = [rIndex (rIndex(1,end) + rr(beatNr+1) )];
             end
             % adding extra samples to ecgSig to allow for partial
@@ -347,34 +421,13 @@ end
 
 %% Ventricular activity
 if Nbvt
-    % Kors regression transformation
-    K = transpose([ 0.380,  -0.070,   0.110;...
-        -0.070,   0.930,  -0.230;...
-        -0.130,   0.060,  -0.430;...
-        0.050,  -0.020,  -0.060;...
-        -0.010,  -0.050,  -0.140;...
-        0.140,   0.060,  -0.200;...
-        0.060,  -0.170,  -0.110;...
-        0.540,   0.130,   0.310]);
-    vpb_15l = zeros(Nbvt,15,Lv);
-    for k = 1:Nbvt
-        vpb_15l(k,1:2,:) = vpb(k,1:2,:);
-        vpb_15l(k,3,:) = vpb(k,2,:) - vpb(k,1,:);
-        vpb_15l(k,4,:) = -vpb(k,1,:) + vpb(k,2,:)/2;
-        vpb_15l(k,5,:) =  vpb(k,1,:) - vpb(k,2,:)/2;
-        vpb_15l(k,6,:) =  vpb(k,2,:) - vpb(k,1,:)/2;
-        vpb_15l(k,7:12,:) = vpb(k,3:8,:);
-        vpb_15l(k,13:15,:) = K * squeeze(vpb(k,1:8,:));
-    end
     
-    v_idx = find(targets_beats == 4);
     nVPB = 0;
-    
     for k = 1:length(v_idx)
         
         nVPB = nVPB + 1;
         QRSTtemp = squeeze(vpb_15l(kv_history(nVPB),:,:));
-        QRSTtemp = QRSTtemp * (0.9 + rand*0.2);
+        QRSTtemp = QRSTtemp * (0.8 + rand*0.2);
         
         if realVAon
             for l=1:15
