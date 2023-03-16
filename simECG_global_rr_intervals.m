@@ -252,7 +252,7 @@ d_RR_bt = d_RR_sr ;
 % mean episode duration of a VPB event (NOTE: related to the dominant
 % rhythm!)
 d_vpb_sr = mean( vpb_p(1) + (vpb_p(2)*0.725) + (vpb_p(3)*0.6) );
-d_vpb_at = 1.5;
+d_vpb_at = 1;
 d_vpb_af = 1;
 % sinus rhythm burden
 B_sr = 1 - ( B_at + B_af + B_bt + B_vpb ) ;
