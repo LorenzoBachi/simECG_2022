@@ -1,4 +1,4 @@
-function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, ecgParameters, noiseRMS)
+function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, ecgParameters, noiseRMS, multileadVA)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %
@@ -6,11 +6,12 @@ function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, ecgParameter
 
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal
-load('DATA_AR_MN_Dictionary_L9.mat');
+load('DATA_AR_MN_Dictionary_L9_v2.mat');
 
 fs = ecgParameters.fs;
 v1 = [];
 N200 = ceil(ecgLength/5);
+signal = multileadVA([7:12,1:3],:);
 
 % %8 standard-leads (I,II,V1-V6)
 % L = size(AR_MN,3);
@@ -23,7 +24,25 @@ L = size(AR_MN,3);
 nu = rand(1)*(0.9995-0.99) + 0.99;
 
 %--> 2) Apply 1st model and then sum the different signals
-noiseRMS = repmat(noiseRMS,1,L);
+
+if noiseRMS > 1 %info in dB
+    DefnoiseRMS = noiseRMS;
+    Rpos = round(cumsum(ecgParameters.RR).*fs); %in samples
+    noiseRMS = zeros(1,size(signal,1));ppQRS = zeros(1,size(signal,1));
+    for l = 1:size(signal,1)
+        qrsAll = zeros(100,length(Rpos));
+        for ii = 2:length(Rpos)-1
+            qrsAll(:,ii) = signal(l,Rpos(ii)-50:Rpos(ii)+50-1);
+        end
+        Aqrs = mean(qrsAll,2);
+        ppQRS(l) = max(Aqrs)-min(Aqrs);
+        noiseRMS(l) = ((max(Aqrs)-min(Aqrs))/(10^(DefnoiseRMS/20)));%in mV
+    end  
+else %info in mV
+    noiseRMS = repmat(noiseRMS,1,L);
+end
+
+
 u0 = noiseRMS*1e3; %in uV
 
 for Li = 1:L
