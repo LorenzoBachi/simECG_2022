@@ -1,4 +1,4 @@
-function [rr, annotations, targets_beats, ecgParameters, hrArray, state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, ecgParameters)
+function [rr, annotations, targets_beats, simECGdata, hrArray, state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, simECGdata)
 % [] = simECG_global_rr_intervals() generates the global RR series, which
 % may include sinus rhythm, atrial fibrillation or other arrhythmias.
 
@@ -40,7 +40,7 @@ rrLength = 5*sigLength;
 
 % signal length in ms
 sigLengthMs = sigLength * 1000;
-ecgParameters.Fr = [];
+simECGdata.Fr = [];
 
 % fetching arrhythmia parameters
 B_af = arrhythmiaParameters.B_af;
@@ -76,7 +76,7 @@ beatCodes = ['N','A','V','+']; % please note: if new beat types are added, '+' s
 rhythmCodes = {'(N','(AFIB','(SVTA','(B','(T'};
 
 % Choice of rhythm to generate
-if ecgParameters.ESTflag == 1 %Lorenzo 06/2022
+if simECGdata.ESTflag == 1 %Lorenzo 06/2022
     rhythmType = 3; % SR and EST
     if B_af ~= 0
         B_af = 0;
@@ -103,7 +103,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             rr_sr = simECG_get_real_RR_intervals(0, rrLength); % sinus rhythm rr series (real)
             hrArray = (1./diff(rr_sr))*60 ;
         else % Generate sinus activity with the McSharry spectral model
-            [rr_sr,hrArray,ecgParameters] = simECG_generate_sinus_rhythm(rrLength,ecgParameters); % sinus rhythm rr series
+            [rr_sr,hrArray,simECGdata] = simECG_generate_sinus_rhythm(rrLength,simECGdata); % sinus rhythm rr series
 %             rr_sr = rr_sr(1:rrLength);
         end
         
@@ -126,8 +126,8 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             rr_sr = simECG_get_real_RR_intervals(0, srLength); % sinus rhythm rr series (real)
             hrArray = (1./diff(rr_sr))*60 ;
         else % Use simulated RR series
-            [rr_sr,hrArray,ecgParameters] = simECG_generate_sinus_rhythm(srLength,ecgParameters); % sinus rhythm rr series
-            sigLength = ceil(ecgParameters.Duration);
+            [rr_sr,hrArray,simECGdata] = simECG_generate_sinus_rhythm(srLength,simECGdata); % sinus rhythm rr series
+            sigLength = ceil(simECGdata.Duration);
 %             rr_sr = rr_sr(1:srLength);
         end
         
@@ -149,7 +149,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
     case 3 % The entire rhythm is SR but for EST signal %CPerez 06/2021
         srLength = [];
         if realRRon == 1 % Use real RR series
-            [rr_sr, ecgParameters.peak, fa ecgParameters.ecgnr] = simECG_get_real_RR_intervals(2,rrLength); % If opt == 1 - AF, If opt == 2 - SR for stress test
+            [rr_sr, simECGdata.peak, fa simECGdata.ecgnr] = simECG_get_real_RR_intervals(2,rrLength); % If opt == 1 - AF, If opt == 2 - SR for stress test
              
             L = 300;
             if  realRRon %CPerez 04/2022. To take into account the influence of the "QT memory" before starting the EST
@@ -164,26 +164,26 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             [b,a] = butter(2,0.03); %Fc = 0.03Hz
             hrMeanu = filtfilt(b,a,dHRu);
             hrArray = interp1(pos, hrMeanu, timebeats);
-            ecgParameters.Duration = sum(rr_sr); %in seconds
+            simECGdata.Duration = sum(rr_sr); %in seconds
             
             %Recalculate the exercise peak
             posPeak = sort(find(round(rr_sr,3)==min(round(rr_sr,3)))); %peak position
             if length(posPeak)>1
                 posPeak = posPeak(round(length(posPeak)/2));
             end
-            ecgParameters.peak = sum(rr_sr(1:posPeak));
+            simECGdata.peak = sum(rr_sr(1:posPeak));
             
             
-            ecgParameters.Frini = [];
-            ecgParameters.Frpeak = [];
-            ecgParameters.Frend = [];
+            simECGdata.Frini = [];
+            simECGdata.Frpeak = [];
+            simECGdata.Frend = [];
             
-            sigLength = ceil(ecgParameters.Duration);
+            sigLength = ceil(simECGdata.Duration);
             sigLengthMs = sigLength * 1000;
             
         else % Use synthetic RR series CPerez 04/2022
-            [rr_sr, hrArray, ecgParameters] = simECG_generate_sinus_rhythm(rrLength, ecgParameters);
-            sigLength = fix(ecgParameters.Duration); %in sec
+            [rr_sr, hrArray, simECGdata] = simECG_generate_sinus_rhythm(rrLength, simECGdata);
+            sigLength = fix(simECGdata.Duration); %in sec
             sigLengthMs = sigLength * 1000; %in msec
         end
         rhythm_states = ones(1,sigLength);

@@ -1,4 +1,4 @@
-function [rr,hrmean,ecgParameters] = simECG_generate_sinus_rhythm(N,ecgParameters)
+function [rr,hrmean,simECGdata] = simECG_generate_sinus_rhythm(N,simECGdata)
 %
 % rr = simPAF_gen_SR_RR_intervals() returns synthetic SR RR intervals. 
 % Ventricular rhythm during SR is simulated using RR interval generator 
@@ -12,7 +12,7 @@ if N < 2  % something does not work when N = 1
     N = 2;
 end
 
-switch ecgParameters.ESTflag
+switch simECGdata.ESTflag
     case 0 %Any case
         hrmean = randi([50,80]);         % Generate heart rate from an interval of [50-80] bpm
         hrstd = randi([5,30])/10;               % Generate SD of heart rate from an interval of [0.5-3] bpm
@@ -25,8 +25,8 @@ switch ecgParameters.ESTflag
         fhiStd = 0.1;
         
         % Respiration pattern
-        ecgParameters.Fr = ones(1,ceil(N*respRate)).*respRate; %number of cycles
-        ecgParameters.Duration = N;
+        simECGdata.Fr = ones(1,ceil(N*respRate)).*respRate; %number of cycles
+        simECGdata.Duration = N;
         
         
     case 1 %EST
@@ -43,40 +43,40 @@ switch ecgParameters.ESTflag
         Fr_b = []; Fr_e = []; Fr_r = []; Fr_b2 = [];
         %--> Basal
         T = 0; bins = 1;
-        while T < ecgParameters.Basal
-            Fr_b = repmat(ecgParameters.Frini,1, bins);
+        while T < simECGdata.Basal
+            Fr_b = repmat(simECGdata.Frini,1, bins);
             T = sum(1./Fr_b);
             bins = bins +1;
         end
         
         %--> Exercise
         T = 0; bins = 2;
-        while T < ecgParameters.Exercise
-            Fr_e = linspace(ecgParameters.Frini, ecgParameters.Frpeak, bins);
+        while T < simECGdata.Exercise
+            Fr_e = linspace(simECGdata.Frini, simECGdata.Frpeak, bins);
             T = sum(1./Fr_e);
             bins = bins +1;
         end
 
         %--> Recovery
         T = 0; bins = 2;
-        while T < ecgParameters.Recovery
-            Fr_r = linspace(ecgParameters.Frpeak - 0.001, ecgParameters.Frend, bins);
+        while T < simECGdata.Recovery
+            Fr_r = linspace(simECGdata.Frpeak - 0.001, simECGdata.Frend, bins);
             T = sum(1./Fr_r);
             bins = bins +1;
         end
         
         %--> Basal2
         T = 0; bins = 1;
-        while T < ecgParameters.Basal2
-            Fr_b2 =  repmat(ecgParameters.Frend,1, bins);
+        while T < simECGdata.Basal2
+            Fr_b2 =  repmat(simECGdata.Frend,1, bins);
             T = sum(1./Fr_b2);
             bins = bins +1;
         end
         
-        ecgParameters.Fr = [Fr_b Fr_e Fr_r(2:end) Fr_b2];                     
+        simECGdata.Fr = [Fr_b Fr_e Fr_r(2:end) Fr_b2];                     
 end
 
 % Compute rr process
-[rr, ecgParameters] = simECG_RR_process(MayerFreq,floStd,fhiStd,lfhfratio,hrmean,rrstd,ecgParameters);
-hrmean = 60./ecgParameters.RRmean;
+[rr, simECGdata] = simECG_RR_process(MayerFreq,floStd,fhiStd,lfhfratio,hrmean,rrstd,simECGdata);
+hrmean = 60./simECGdata.RRmean;
 end

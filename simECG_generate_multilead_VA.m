@@ -1,4 +1,4 @@
-function [QRSindex, TendIndex, rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, ecgParameters,state_history)
+function [QRSindex, TendIndex, rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, simECGdata,state_history)
 % [] = simECG_gen_multilead_VA() returns multilead (15 lead) ventricular
 % activity. A set of 100 15-lead ECGs with SR selected from the PTB Diagnostic
 % ECG Database is used as a basis for modeling ventricular activity. The ECGs
@@ -109,7 +109,7 @@ W = rand * 0;
 %ventricular beat amplitude factor
 vaf = 1;
 %multiform VPBs?
-multiform_vpbs = ecgParameters.multiform_vpbs;
+multiform_vpbs = simECGdata.multiform_vpbs;
 switch realVAon
     case 0 % Generate ventricular complexes from the Hermite-logistic
         %function model
@@ -381,7 +381,7 @@ switch realVAon %%
     case 0
         %CPerez 05/2022
         %Include respiration
-        [Q] = simECG_rotation_angles_XYZ_v2( ecgParameters.Fr, T, Fs, Zr);
+        [Q] = simECG_rotation_angles_XYZ_v2( simECGdata.Fr, T, Fs, Zr);
         
         for t = 1 : ecgLength
             pqrstResampled(:,t) = Q(:,:,t)*pqrstResampled(:,t);

@@ -1,4 +1,4 @@
-function multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, B_af, ecgParameters)
+function multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, B_af, simECGdata)
 % multileadAA = simECG_gen_multilead_AA() returns multilead (15 lead) atrial
 % activity. 
 %
@@ -67,7 +67,7 @@ switch rhythmType
                % avoid placing P waves for ventricular beats %Lorenzo
                if targets_beats(p_num) ~= 4
                    bias = 0;
-                   if ~isfield(ecgParameters,'peak') || (QRSindex(p_num) <= ecgParameters.peak*1e3) %Exercise or normal
+                   if ~isfield(simECGdata,'peak') || (QRSindex(p_num) <= simECGdata.peak*1e3) %Exercise or normal
                        if RR(p_num-1) < 0.520 %Change point
                            PQ = round(152 + 358*(RR(p_num-1)-0.520));%-34.53 + 361.21*RR
                        else
@@ -75,7 +75,7 @@ switch rhythmType
                        end
                    end
                    
-                   if isfield(ecgParameters,'peak') && QRSindex(p_num) > ecgParameters.peak*1e3 %Recovery
+                   if isfield(simECGdata,'peak') && QRSindex(p_num) > simECGdata.peak*1e3 %Recovery
                        if RR(p_num-1) < 0.430 %Change point
                            PQ = round(-65 + 470*RR(p_num-1)); %-65.26 + 470.24*RR
                        else
@@ -158,7 +158,7 @@ switch rhythmType
                % avoid placing P waves for ventricular beats %Lorenzo
                if targets_beats(p_num) ~= 4
                    bias = 0;
-                   if ~isfield(ecgParameters,'peak') || (QRSindex(p_num) <= ecgParameters.peak*1e3) %Exercise or normal
+                   if ~isfield(simECGdata,'peak') || (QRSindex(p_num) <= simECGdata.peak*1e3) %Exercise or normal
                        if RR(p_num-1) < 0.520 %Change point
                            PQ = round(152 + 358*(RR(p_num-1)-0.520));%-34.53 + 361.21*RR
                        else
@@ -166,7 +166,7 @@ switch rhythmType
                        end
                    end
                    
-                   if isfield(ecgParameters,'peak') && QRSindex(p_num) > ecgParameters.peak*1e3 %Recovery
+                   if isfield(simECGdata,'peak') && QRSindex(p_num) > simECGdata.peak*1e3 %Recovery
                        if RR(p_num-1) < 0.430 %Change point
                            PQ = round(-65 + 470*RR(p_num-1)); %-65.26 + 470.24*RR
                        else

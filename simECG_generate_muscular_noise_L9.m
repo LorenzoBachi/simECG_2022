@@ -1,4 +1,4 @@
-function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, ecgParameters, noiseRMS, signal)
+function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, simECGdata, noiseRMS, signal)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %
@@ -8,7 +8,7 @@ function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, ecgParameter
 % the simulated MN signal
 load('DATA_AR_MN_Dictionary_L9_v2.mat');
 
-fs = ecgParameters.fs;
+fs = simECGdata.fs;
 v1 = [];
 N200 = ceil(ecgLength/5);
 
@@ -26,7 +26,7 @@ nu = rand(1)*(0.9995-0.99) + 0.99;
 
 if noiseRMS > 1 %info in dB
     DefnoiseRMS = noiseRMS;
-    Rpos = round(cumsum(ecgParameters.RR).*fs); %in samples
+    Rpos = round(cumsum(simECGdata.RR).*fs); %in samples
     noiseRMS = zeros(1,size(signal,1));ppQRS = zeros(1,size(signal,1));
     for l = 1:size(signal,1)
         qrsAll = zeros(100,length(Rpos));
@@ -46,8 +46,8 @@ u0 = noiseRMS*1e3; %in uV
 simuMN_200 = [];
 
 for Li = 1:L
-    if ecgParameters.ESTflag %take a look!
-        peak = fix(ecgParameters.peak*200);
+    if simECGdata.ESTflag %take a look!
+        peak = fix(simECGdata.peak*200);
         N1 = length(1:peak);
         N2 = length(peak:N200);
 %         ut = [rescale(2.^((1:N1)./(100*fs)),(u0(Li))/3,3*(u0(Li))/3),...

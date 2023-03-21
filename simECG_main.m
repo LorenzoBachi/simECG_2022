@@ -26,7 +26,7 @@ onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is 
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
 realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
-ecgParameters.fs = 1000; %sampling frequency
+simECGdata.fs = 1000; %sampling frequency
 
 %% Atrial Fibrillation
 B_af = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
@@ -68,9 +68,9 @@ noiseRMS =  [0.075,       0.01,    0.2]; % Noise level in millivolts. Vector wit
 %*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
 
 %Motion artifacts parameters
-ecgParameters.MA_Prob = 0.1; %the probability of success, i.e., spikes 
+simECGdata.MA_Prob = 0.1; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (taking into account in simulated muscular noise)
-ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
+simECGdata.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 % 0 - no noise;
 % 1 - motion artifact;
@@ -84,25 +84,25 @@ ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 %% Exercise stress test parameters %CPerez 03/2022
 %  WARNING : cannot select real atrial activity and synthetic ventricular activity
-ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
-if ecgParameters.ESTflag
-    ecgParameters.Basal = randi([1,3],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
-    ecgParameters.Exercise = randi([7,12],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
-    ecgParameters.Recovery = randi([3,5],1)*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
-    ecgParameters.Basal2 = randi([1,2],1)*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
+simECGdata.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
+if simECGdata.ESTflag
+    simECGdata.Basal = randi([1,3],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
+    simECGdata.Exercise = randi([7,12],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
+    simECGdata.Recovery = randi([3,5],1)*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
+    simECGdata.Basal2 = randi([1,2],1)*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
     
-    ecgParameters.Duration = ecgParameters.Basal +ecgParameters.Exercise + ecgParameters.Recovery + ecgParameters.Basal2; %Duration of Exercise Stress Test in seconds. %Cris 04/2022
-    ecgParameters.peak = ecgParameters.Basal +ecgParameters.Exercise;    % peak of Exercise Stress Test in seconds. %Cris 04/2022
-    sigLength =  ecgParameters.Duration;
-    ecgParameters.RRini = 60/randi([55,65],1);    % onset HR express according to RR in seconds. %Cris 04/2022
-    ecgParameters.RRpeak = 60/randi([170,185],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
-    ecgParameters.RRend = ecgParameters.RRini*1.2;    % final HR express according to RR in seconds. %Cris 04/2022
+    simECGdata.Duration = simECGdata.Basal +simECGdata.Exercise + simECGdata.Recovery + simECGdata.Basal2; %Duration of Exercise Stress Test in seconds. %Cris 04/2022
+    simECGdata.peak = simECGdata.Basal +simECGdata.Exercise;    % peak of Exercise Stress Test in seconds. %Cris 04/2022
+    sigLength =  simECGdata.Duration;
+    simECGdata.RRini = 60/randi([55,65],1);    % onset HR express according to RR in seconds. %Cris 04/2022
+    simECGdata.RRpeak = 60/randi([170,185],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
+    simECGdata.RRend = simECGdata.RRini*1.2;    % final HR express according to RR in seconds. %Cris 04/2022
     
-    ecgParameters.Frini = simECG_random_number(0.25, 0.35);    % onset Respiratory frequency in Hz. %Cris 04/2022
-    ecgParameters.Frpeak = simECG_random_number(0.65, 0.75);    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
-    ecgParameters.Frend = simECG_random_number(0.25, 0.35);    % final Respiratory frequency in Hz. %Cris 04/2022
+    simECGdata.Frini = simECG_random_number(0.25, 0.35);    % onset Respiratory frequency in Hz. %Cris 04/2022
+    simECGdata.Frpeak = simECG_random_number(0.65, 0.75);    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
+    simECGdata.Frend = simECG_random_number(0.25, 0.35);    % final Respiratory frequency in Hz. %Cris 04/2022
 end
-ecgParameters.multiform_vpbs = multiform_vpbs;
+simECGdata.multiform_vpbs = multiform_vpbs;
 
 %% ECG Generator
 arrhythmiaParameters.B_af = B_af;
@@ -119,7 +119,7 @@ arrhythmiaParameters.d_bt = d_bt;
 
 for nr = 1:1
     
-    [simECGdata, initialParameters, annotations, ecgParameters] = simECG_generator(sigLength,realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, ecgParameters);
+    [simECGdata, initialParameters, annotations] = simECG_generator(sigLength,realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, simECGdata);
     disp(['Simulation ' num2str(nr) '  completed.']);
     
 end

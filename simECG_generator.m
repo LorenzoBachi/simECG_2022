@@ -1,4 +1,4 @@
-function [simECGdata, initialParameters, annotations, ecgParameters] = simECG_generator(sigLength, realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, ecgParameters)
+function [simECGdata, initialParameters, annotations] = simECG_generator(sigLength, realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, simECGdata)
 % [] = simECG_generator() returns a 15-by-N matrix containing 15 lead
 % ECGs. Three types of ECG signals can be generated: SR (AF burden set to 0, 
 % AF (AF burden set to 1) or PAF (AF burden any value from the interval 
@@ -55,14 +55,14 @@ function [simECGdata, initialParameters, annotations, ecgParameters] = simECG_ge
 
 disp('    ECG generator: simulation starting ...');
 
-if ecgParameters.MA_Prob > 1, ecgParameters.MA_Prob = 1 / ecgParameters.MA_Prob; end
+if simECGdata.MA_Prob > 1, simECGdata.MA_Prob = 1 / simECGdata.MA_Prob; end
 
 switch onlyRR
     case 1 % only RR intervals are generated
         % Generate initial parameters (fibrillatory frequency)
         fibFreqz = simECG_fibrillation_frequency();
         % Generate RR intervals
-        [rr,annotations,targets_beats,ecgParameters,hrArray,state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
+        [rr,annotations,targets_beats,simECGdata,hrArray,state_history] = simECG_global_rr_intervals(sigLength, fibFreqz, realRRon, arrhythmiaParameters, simECGdata);
         rr(cumsum(rr)>sigLength)= [];
         rrLength = numel(rr);
         simECGdata.rr = rr;
@@ -96,16 +96,16 @@ switch onlyRR
         % Generate initial parameters (fibrillatory frequency)
         fibFreqz = simECG_fibrillation_frequency();   
         % Generate RR intervals
-        [rrIn,annotations,targets_beats,ecgParameters,hrArray,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, ecgParameters);
+        [rrIn,annotations,targets_beats,simECGdata,hrArray,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, simECGdata);
         rrLength = numel(rrIn);
         % Generate multilead ventricular activity
-        [QRSindex, TendIndex,rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, ecgParameters,state_history); %_QTC adde by Alba 19/03
-        ecgParameters.RR = rr./ecgParameters.fs;
+        [QRSindex, TendIndex,rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, simECGdata,state_history); %_QTC adde by Alba 19/03
+        simECGdata.rr = rr./simECGdata.fs;
         % Generate multilead atrial activity
-        multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.B_af, ecgParameters);
+        multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.B_af, simECGdata);
         % Generate multilead noise
         for ii = 1:numel(noiseType)
-            [multileadNoise_All(:,:,ii)] = simECG_generate_noise(ecgLength, noiseType(ii), noiseRMS(ii), ecgParameters, multileadVA);
+            [multileadNoise_All(:,:,ii)] = simECG_generate_noise(ecgLength, noiseType(ii), noiseRMS(ii), simECGdata, multileadVA);
         end
         multileadNoise = sum(multileadNoise_All,3);
         % Generate multilead noise
@@ -122,7 +122,7 @@ switch onlyRR
         simECGdata.targets_beats = targets_beats;
         simECGdata.state_history = state_history;
         simECGdata.ecgLength = ecgLength';
-        simECGdata.Fr = ecgParameters.Fr';
+        simECGdata.Fr = simECGdata.Fr';
         simECGdata.state_history = state_history;
         simECGdata.hrArray = hrArray;
         

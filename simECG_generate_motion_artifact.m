@@ -1,4 +1,4 @@
-function [simuMA] = simECG_generate_motion_artifact(ecgLength, ecgParameters, noiseRMS)
+function [simuMA] = simECG_generate_motion_artifact(ecgLength, simECGdata, noiseRMS)
 % INPUTS:
 % - successProb : the probability of success, i.e., spikes 
 
@@ -20,20 +20,20 @@ function [simuMA] = simECG_generate_motion_artifact(ecgLength, ecgParameters, no
 
 sigmay = 0.03*noiseRMS; %in mV;
 
-if ecgParameters.MA_Flag %Thumb-ECG
+if simECGdata.MA_Flag %Thumb-ECG
     L = 1;
 else %8 indipendent leads or 1-lead
     L = 8;
 end
 
 for Li = 1:L
-    bernogauss = simECG_Bernoulli_Gaussian(ecgLength, ecgParameters.MA_Prob, sigmay);
+    bernogauss = simECG_Bernoulli_Gaussian(ecgLength, simECGdata.MA_Prob, sigmay);
     bernogauss_conv(Li,:) = simECG_Bernoulli_Gaussian_convolution(ecgLength, bernogauss)';
 end
 
 simuMA = bernogauss_conv; %in mV
 
-if ~ecgParameters.MA_Flag % Transform to the 15 leads
+if ~simECGdata.MA_Flag % Transform to the 15 leads
     simuMA_8 = simuMA; %leadcalc(simuMA,'stan');% V1,V2,V3,V4,V5,V6,I,II
     simuMA_12 = leadcalc(simuMA_8,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
     simuMA_VCG = leadcalc(simuMA_8,'synt');
