@@ -1,4 +1,4 @@
-function [multileadNoise, poles] = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ecgParameters)
+function [multileadNoise, poles] = simECG_generate_noise(ecgLength, noiseType, noiseRMS, ecgParameters, multileadVA)
 %
 % multileadNoise = simECG_generate_noise() returns physiological noises obtained
 % from the MIT-BIH Noise Stress Test Database. The signals of the
@@ -94,7 +94,7 @@ switch noiseType
         end
         
     case 6     %Simulated Muscular Noise
-        multileadNoise = simECG_generate_muscular_noise_L9(ecgLength, ecgParameters, noiseRMS);%in mVolts
+        multileadNoise = simECG_generate_muscular_noise_L9(ecgLength, ecgParameters, noiseRMS, multileadVA);%in mVolts
         
     case 7     %Real Exercise stress test noise (from R. Bailón)
         multileadNoise = simECG_noise_real_EST(ecgLength, ecgParameters);
