@@ -104,7 +104,7 @@ switch onlyRR
         multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.B_af, ecgParameters);
         % Generate multilead noise
         for ii = 1:numel(noiseType)
-            [multileadNoise_All(:,:,ii), poles] = simECG_generate_noise(ecgLength, noiseType(ii), noiseRMS(ii), ecgParameters);
+            [multileadNoise_All(:,:,ii] = simECG_generate_noise(ecgLength, noiseType(ii), noiseRMS(ii), ecgParameters);
         end
         multileadNoise = sum(multileadNoise_All,3);
         % Generate multilead noise
@@ -122,7 +122,6 @@ switch onlyRR
         simECGdata.state_history = state_history;
         simECGdata.ecgLength = ecgLength';
         simECGdata.Fr = ecgParameters.Fr';
-        simECGdata.poles = poles;
         simECGdata.state_history = state_history;
         simECGdata.hrArray = hrArray;
         

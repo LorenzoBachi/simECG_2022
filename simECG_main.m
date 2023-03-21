@@ -82,7 +82,7 @@ ecgParameters.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 %% Exercise stress test parameters %CPerez 03/2022
 %  WARNING : cannot select real atrial activity and synthetic ventricular activity
-ecgParameters.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
+ecgParameters.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
 if ecgParameters.ESTflag
     ecgParameters.Basal = randi([1,3],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     ecgParameters.Exercise = randi([7,12],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
