@@ -18,7 +18,7 @@
 
 % ECG is simulated @1 KHz.
 
-%clear; clc;
+clear; clc;
 
 %% General Parameters
 sigLength = 10*60;   %desired ECG length in seconds;
@@ -58,7 +58,7 @@ d_bt = 8;    % Median episode length (in beats) for bigeminy and trigeminy
 % default from the MIt-BIH Arrhythmia Database: 8
 
 %% Ventricular Premature Beats
-B_vpb = 0.20;     % VPB burden
+B_vpb = 0;%0.20;     % VPB burden
 vpb_p = [0.5,0.5,0]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
 multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
 
