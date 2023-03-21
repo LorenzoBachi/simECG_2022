@@ -64,7 +64,9 @@ multiform_vpbs = 0; % if this setting is different from 0, different shapes of V
 
 %% Noise Parameters
 noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS =  [0.075,       25,    0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseRMS =  [0.075,       0.01,    0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+%*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
+
 %Motion artifacts parameters
 ecgParameters.MA_Prob = 0.1; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (taking into account in simulated muscular noise)
