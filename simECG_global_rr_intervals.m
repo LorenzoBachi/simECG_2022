@@ -429,6 +429,10 @@ while t<=sigLengthMs
                 annRhythm{kann} = [];
                 % update targets array
                 targets_beats(k) = 1;
+                % check whether RR simulation should be terminated
+                if t>sigLengthMs
+                    break;
+                end
             end
         case 2
             % AF
@@ -468,6 +472,10 @@ while t<=sigLengthMs
                 annRhythm{kann} = [];
                 % update targets array
                 targets_beats(k) = 2;
+                % check whether RR simulation should be terminated
+                if t>sigLengthMs
+                    break;
+                end
             end
         case 3
             % AT
@@ -586,6 +594,10 @@ while t<=sigLengthMs
                 annRhythm{kann} = [];
                 % update targets array
                 targets_beats(k) = 3;
+                % check whether RR simulation should be terminated
+                if t>sigLengthMs
+                    break;
+                end
             end
         case 4
             % BT
@@ -682,6 +694,10 @@ while t<=sigLengthMs
                     targets_beats(k) = 4;
                     % the next beat should be normal
                     bt_flag = BT_type;
+                end
+                % check whether RR simulation should be terminated
+                if t>sigLengthMs
+                    break;
                 end
             end
         case 5
