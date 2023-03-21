@@ -58,13 +58,13 @@ d_bt = 8;    % Median episode length (in beats) for bigeminy and trigeminy
 % default from the MIt-BIH Arrhythmia Database: 8
 
 %% Ventricular Premature Beats
-B_vpb = 0;%0.20;     % VPB burden
+B_vpb = 0.20;     % VPB burden
 vpb_p = [0.5,0.5,0]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
 multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
 
 %% Noise Parameters
 noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS =  [0.075,       0.01,    0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseRMS =  [0.075,       0.005,    0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
 
 %Motion artifacts parameters
@@ -84,7 +84,7 @@ simECGdata.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
 %% Exercise stress test parameters %CPerez 03/2022
 %  WARNING : cannot select real atrial activity and synthetic ventricular activity
-simECGdata.ESTflag = 1;     % 1- Exercise Stress Test flag, 0 - other cases
+simECGdata.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
 if simECGdata.ESTflag
     simECGdata.Basal = randi([1,3],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
     simECGdata.Exercise = randi([7,12],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022

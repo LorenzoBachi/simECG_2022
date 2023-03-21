@@ -12,7 +12,6 @@ function [simuMA] = simECG_generate_motion_artifact(ecgLength, simECGdata, noise
 
 %--------
 % Hesam Halvaei, Lund University
-% Update: Cristina Perez, University of Zaragoza, 09/2022
 %--------
 % - Load the AR(4) coefficient estimated based muscle noise.
 % - AR_MN is a library of AR(4) coefficients obtained from 25 3-lead muscle
