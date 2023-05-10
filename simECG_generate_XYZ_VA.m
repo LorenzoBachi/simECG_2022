@@ -1,4 +1,4 @@
-function [pqrstFrank, Qind, Rind, Sind, Tind] = simECG_generate_XYZ_VA(num)
+function [pqrstFrank, Qind, Rind, Sind, Tind] = simECG_generate_XYZ_VA(num,Amp)
 %
 % [] = simECG_generate_XYZ_VA() returns simulated QRST complexes.
 % Ventricular activity is simulated by using a dynamic ECG model
@@ -18,15 +18,15 @@ teta0 = -pi/2;                  % initial phase of the ECG
 %% QRS
 
 % Incresing QRS complex width
-W = rand * 0.025;
+W = rand * 0.05;
 
 Qw = simECG_random_number(0.05, 0.08)+W;
 Rw = simECG_random_number(0.05, 0.08)+W;
 Sw = simECG_random_number(0.05, 0.08)+W;
 
-% Increasing QRS complex maximum amplitude
-A = 1.25; 
-f = rand * A + 0.25;
+% QRS complex maximum amplitude scaling
+f = Amp(1);
+A = Amp(2);
 asf=zeros(1,6);
 for k=1:6
     %amplitude scaling factor

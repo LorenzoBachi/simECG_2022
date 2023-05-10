@@ -1,4 +1,4 @@
-function [QRSindex, TendIndex, rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, simECGdata,state_history)
+function [QRSindex, TendIndex, rr, multileadVA, ecgLength, simECGdata] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, simECGdata,state_history)
 % [] = simECG_gen_multilead_VA() returns multilead (15 lead) ventricular
 % activity. A set of 100 15-lead ECGs with SR selected from the PTB Diagnostic
 % ECG Database is used as a basis for modeling ventricular activity. The ECGs
@@ -52,12 +52,23 @@ qt_hyper_s(1:N-1) = qt_hyper_s(N); %Values for the first N beats are fixed to th
 qt_hyper = interp1(pos,qt_hyper_s,timebeats,'spline'); %QT series in beats
 qt_hyper = round(qt_hyper*Fs);
 
+%% Signal amplitude scaling factors
+ecg_amp = simECGdata.ecg_amp;
+if ecg_amp < 0
+    ecg_amp = 5;
+end
+%maximum and minimum ECG QRST amplitude scaling factor
+max_asf = 1 + (ecg_amp/10);
+min_asf = ecg_amp/	10;
+scale_factor = rand * max_asf + min_asf;
+A = max_asf + min_asf;
+simECGdata.scale_factor = scale_factor;
 
 %% Normal PQRST complexes generation
 switch realVAon
     case 0 % Generate synthetic PQRST complexes
         %[data.pqrst, data.Qind, data.Rind, data.Sind, data.Tind] = simPAF_gen_syn_VA(100);
-        [data.pqrst, data.Qind, data.Rind, data.Sind, data.Tind] = simECG_generate_XYZ_VA(100);%% Changed in v012020
+        [data.pqrst, data.Qind, data.Rind, data.Sind, data.Tind] = simECG_generate_XYZ_VA(100,[scale_factor,A]);%% Changed in v012020
     case 1 % Load random patch of PQRST complexes extracted from PTB database
         sigNum = randi([1 100]);
         load('DATA_PQRST_real')
@@ -107,7 +118,7 @@ Lv = 800;
 %ventricular QRS complexes increased width
 W = rand * 0;
 %ventricular beat amplitude factor
-vaf = 1;
+vaf = 0.5 + 0.5*(ecg_amp/5) + (0.2*rand - 0.15);
 %multiform VPBs?
 multiform_vpbs = simECGdata.multiform_vpbs;
 switch realVAon
@@ -440,6 +451,8 @@ if Nbvt
     end
     
 end
+% store rr intervals in simECGdata
+simECGdata.rr = rr./simECGdata.fs;
 
 end
 

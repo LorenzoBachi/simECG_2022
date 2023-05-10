@@ -21,7 +21,7 @@
 clear; clc;
 
 %% General Parameters
-sigLength = 10*60;   %desired ECG length in seconds;
+sigLength = 5*60;   %desired ECG length in seconds;
 onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
 realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
 realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
@@ -29,17 +29,14 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 simECGdata.fs = 1000; %sampling frequency
 
 %% Atrial Fibrillation
-B_af = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
-d_af = 300;      % Median episode length > in beats <
+B_af = 0.5;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
+d_af = 100;      % Median episode length > in beats <
 % default from the MIt-BIH Arrhythmia and Atrial Fibrillation Database: 85
 
 %% Atrial Tachycardia
 B_at = 0;     % AT burden
 load('ATDist.mat');
-%ATDist = sqrt(ATDist);
-%ATDist = ATDist.^(1/3);
-%ATDist = ones(1,50);
-%ATDist = zeros(1,50); %ATDist(1) = 1;
+%ATDist = sqrt(ATDist); %ATDist = ATDist.^(1/3); %ATDist = ones(1,50); %ATDist = zeros(1,50); ATDist(1) = 1;
 % ATDist represents the desired distribution of the atrial tachycardia episodes,
 % in relative weights. If the sum of the weights exceeds 1, they are
 % automatically rescaled in order to have a sum of 1. The first element of
@@ -58,17 +55,17 @@ d_bt = 8;    % Median episode length (in beats) for bigeminy and trigeminy
 % default from the MIt-BIH Arrhythmia Database: 8
 
 %% Ventricular Premature Beats
-B_vpb = 0.20;     % VPB burden
+B_vpb = 0;     % VPB burden
 vpb_p = [0.5,0.5,0]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
-multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
+multiform_vpbs = 1; % if this setting is different from 0, different shapes of VPBs may be used in the same record
 
 %% Noise Parameters
 noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS =  [0.075,       0.005,    0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseRMS =  [0.1,     0.005,      0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
 
 %Motion artifacts parameters
-simECGdata.MA_Prob = 0.1; %the probability of success, i.e., spikes 
+simECGdata.MA_Prob = 0.075; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (taking into account in simulated muscular noise)
 simECGdata.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
@@ -102,7 +99,12 @@ if simECGdata.ESTflag
     simECGdata.Frpeak = simECG_random_number(0.65, 0.75);    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
     simECGdata.Frend = simECG_random_number(0.25, 0.35);    % final Respiratory frequency in Hz. %Cris 04/2022
 end
-simECGdata.multiform_vpbs = multiform_vpbs;
+
+%% Amplitude scaling
+% WARNING: This feature is still in development. Use with caution!
+% These factors only work for simulated ventricular and atrial activity at
+% the moment.
+ecg_amp = 5; %ECG signal amplitude scaling factor, a real number. Default is 5, minimum is zero
 
 %% ECG Generator
 arrhythmiaParameters.B_af = B_af;
@@ -116,6 +118,8 @@ arrhythmiaParameters.vpb_p = vpb_p;
 arrhythmiaParameters.B_bt = B_bt;
 arrhythmiaParameters.p_bt = p_bt./(sum(p_bt)+eps);
 arrhythmiaParameters.d_bt = d_bt;
+simECGdata.ecg_amp = ecg_amp;
+simECGdata.multiform_vpbs = multiform_vpbs;
 
 for nr = 1:1
     
@@ -140,6 +144,8 @@ state_history = simECGdata.state_history;
 
 %% Plots
 
+lead = 7;
+
 if ishandle(1), clf(1); end
 figure(1);
 ax(1)=subplot(211);
@@ -148,8 +154,7 @@ xlabel('Time [s]'); ylabel('RR [ms]');
 xlim([0,sigLength]);
 %axis([135, 145, 300, 1300]);
 
-l=2;
-switch l
+switch lead
     case 1
         
         line = 'I';
@@ -164,13 +169,13 @@ switch l
     case 6
         line = 'aVF';
     case {7,8,9,10,11,12}
-        line = ['V',num2str(l-6)];
+        line = ['V',num2str(lead-6)];
 end
 ax(2)=subplot(212);
 t=(0:1:length(multileadECG(7,:))-1)./1000;
-plot(t,multileadECG(l,:)');
+plot(t,multileadECG(lead,:)');
 hold on
-plot(cumsum(rr)./1000,multileadECG(l,cumsum(rr))','ro');
+plot(cumsum(rr)./1000,multileadECG(lead,cumsum(rr))','ro');
 xlabel('Time [s]'); ylabel(['Lead ', line,' [mV]']);
 xlim([0,sigLength]);
 ylim([ -2.5, 2.5 ]);
@@ -181,7 +186,7 @@ linkaxes(ax,'x');
 set(gcf,'units','centimeters','position',[0,10,50,15]);
 %set(gcf, 'Position', get(0, 'Screensize'));
 
-
+%{
 if ishandle(2), clf(2); end
 figure(2);
 stem(cumsum(rr)./1000,targets_beats, 'r');
@@ -191,7 +196,7 @@ ylim([0.75 4.25]);
 yticks([1,2,3,4]); yticklabels({'N','AF','APB','V'});
 xlim([0,sigLength]);
 set(gcf, 'Position', get(0, 'Screensize'));
-
+%}
 %% 12 lead plot
 spacing = 3;
 if ishandle(3), close(3); end
@@ -218,5 +223,6 @@ box on;
 
 linkaxes(ax2,'x');
 set(gcf, 'Position', get(0, 'Screensize'));
+
 
 

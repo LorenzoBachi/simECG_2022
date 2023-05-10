@@ -99,8 +99,7 @@ switch onlyRR
         [rrIn,annotations,targets_beats,simECGdata,hrArray,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, simECGdata);
         rrLength = numel(rrIn);
         % Generate multilead ventricular activity
-        [QRSindex, TendIndex,rr, multileadVA, ecgLength] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, simECGdata,state_history); %_QTC adde by Alba 19/03
-        simECGdata.rr = rr./simECGdata.fs;
+        [QRSindex, TendIndex,rr, multileadVA, ecgLength, simECGdata] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, simECGdata,state_history); %_QTC adde by Alba 19/03
         % Generate multilead atrial activity
         multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.B_af, simECGdata);
         % Generate multilead noise

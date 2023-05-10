@@ -534,7 +534,7 @@ while t<=sigLengthMs
                         % Tachycardia episode begins
                         bpm_at = ( rand*(2-1.1) + 1.1 ) * hrArray(c_SR);
                         % excessive rates are discarded
-                        while bpm_at > 200
+                        while (bpm_at > 200)||(bpm_at < 100)
                             bpm_at = ( rand*(2-1.1) + 1.1 ) * hrArray(c_SR);
                         end
                         beta_AT = hrArray(c_SR) / bpm_at;
