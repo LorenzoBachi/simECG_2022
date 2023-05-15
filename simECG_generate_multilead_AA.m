@@ -245,6 +245,6 @@ end
 
 % amplitude scaling factor
 scale_factor = simECGdata.scale_factor;
-multileadAA = (1 + rand*scale_factor)*multileadAA;
+multileadAA = (1 + rand*(scale_factor+0.25))*multileadAA;
 
 end

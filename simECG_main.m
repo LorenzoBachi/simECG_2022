@@ -29,14 +29,14 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 simECGdata.fs = 1000; %sampling frequency
 
 %% Atrial Fibrillation
-B_af = 0.5;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
+B_af = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 d_af = 100;      % Median episode length > in beats <
 % default from the MIt-BIH Arrhythmia and Atrial Fibrillation Database: 85
 
 %% Atrial Tachycardia
 B_at = 0;     % AT burden
 load('ATDist.mat');
-%ATDist = sqrt(ATDist); %ATDist = ATDist.^(1/3); %ATDist = ones(1,50); %ATDist = zeros(1,50); ATDist(1) = 1;
+%ATDist = sqrt(ATDist); ATDist = ATDist.^(1/4); %ATDist = ones(1,50); %ATDist = zeros(1,50); ATDist(1) = 1;
 % ATDist represents the desired distribution of the atrial tachycardia episodes,
 % in relative weights. If the sum of the weights exceeds 1, they are
 % automatically rescaled in order to have a sum of 1. The first element of
@@ -61,11 +61,11 @@ multiform_vpbs = 1; % if this setting is different from 0, different shapes of V
 
 %% Noise Parameters
 noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS =  [0.1,     0.005,      0.2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseRMS =  [0.15,      0.005,      2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
 
 %Motion artifacts parameters
-simECGdata.MA_Prob = 0.075; %the probability of success, i.e., spikes 
+simECGdata.MA_Prob = 0.01; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (taking into account in simulated muscular noise)
 simECGdata.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
@@ -104,7 +104,7 @@ end
 % WARNING: This feature is still in development. Use with caution!
 % These factors only work for simulated ventricular and atrial activity at
 % the moment.
-ecg_amp = 5; %ECG signal amplitude scaling factor, a real number. Default is 5, minimum is zero
+ecg_amp = rand*10; %ECG signal amplitude scaling factor, a real number. Default is rand*10, minimum is zero
 
 %% ECG Generator
 arrhythmiaParameters.B_af = B_af;
@@ -137,14 +137,14 @@ multileadECG = simECGdata.multileadECG;      % 15 lead ECG
 %multileadVA = simECGdata.multileadVA;       % 15 lead ventricular activity
 %multileadAA = simECGdata.multileadAA;       % 15 lead atrial activity
 %multileadNoise = simECGdata.multileadNoise; % 15 lead physiological noise
+%multileadECG = multileadVA + multileadAA + multileadNoise;
 QRSindex = simECGdata.QRSindex;              % QRS index. Shows sample number when R peak occurs
 targets_beats = simECGdata.targets_beats;    % Marks sinus rhythm, AF, premature atrial and premature ventricular beats
 ecgLength = simECGdata.ecgLength;            % ECG length in samples
 state_history = simECGdata.state_history;
 
 %% Plots
-
-lead = 7;
+lead = 2;
 
 if ishandle(1), clf(1); end
 figure(1);
@@ -186,7 +186,7 @@ linkaxes(ax,'x');
 set(gcf,'units','centimeters','position',[0,10,50,15]);
 %set(gcf, 'Position', get(0, 'Screensize'));
 
-%{
+
 if ishandle(2), clf(2); end
 figure(2);
 stem(cumsum(rr)./1000,targets_beats, 'r');
@@ -196,7 +196,7 @@ ylim([0.75 4.25]);
 yticks([1,2,3,4]); yticklabels({'N','AF','APB','V'});
 xlim([0,sigLength]);
 set(gcf, 'Position', get(0, 'Screensize'));
-%}
+
 %% 12 lead plot
 spacing = 3;
 if ishandle(3), close(3); end
@@ -223,6 +223,7 @@ box on;
 
 linkaxes(ax2,'x');
 set(gcf, 'Position', get(0, 'Screensize'));
+
 
 
 

@@ -77,48 +77,21 @@ rhythmCodes = {'(N','(AFIB','(SVTA','(B','(T'};
 
 % Choice of rhythm to generate
 if simECGdata.ESTflag == 1 %Lorenzo 06/2022
-    rhythmType = 3; % SR and EST
+    rhythmType = 1; % SR and EST
     if B_af ~= 0
         B_af = 0;
         disp('Warning: excercise stress test activated, AF burden set to zero.');
     end
-elseif B_af == 0
-    rhythmType = 0; % SR
-elseif B_af == 1
-    rhythmType = 1; % AF
-elseif B_af > 0 && B_af < 1
-    rhythmType = 2; % PAF
 else
-    error('AF burden must be a value between 0 and 1')
+    rhythmType = 0; % SR
 end
 
 disp('Generating RR intervals ...');
 
 %% RR generation
 rr_af = [];
-switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
-
-    case 0 % The entire rhythm is SR
-        if realRRon == 1 % Use real RR series
-            rr_sr = simECG_get_real_RR_intervals(0, rrLength); % sinus rhythm rr series (real)
-            hrArray = (1./diff(rr_sr))*60 ;
-        else % Generate sinus activity with the McSharry spectral model
-            [rr_sr,hrArray,simECGdata] = simECG_generate_sinus_rhythm(rrLength,simECGdata); % sinus rhythm rr series
-%             rr_sr = rr_sr(1:rrLength);
-        end
-        
-    case 1 % The entire rhythm is AF
-        afLength = 2*sigLength;
-        if realRRon == 1 % Use real RR series
-            rr_af = simECG_get_real_RR_intervals(1, afLength); %atrial fibrillation rr series
-        else % Generate atrial fibrillation activity with the AV model of V. Corino
-            rr_af = simECG_generate_AF_intervals(fibFreqz,afLength); %atrial fibrillation rr series
-            rr_af = rr_af(1:rrLength);
-        end
-        hrArray = (1/mean(rr_af))*60 ;
-        rr_sr = 0;
-        
-    case 2 % PAF
+switch rhythmType  % 0 - regular ECG, 1 - stress ECG
+    case 0
         
         % Generate sinus node pacing activity
         srLength = rrLength;
@@ -127,17 +100,19 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
             hrArray = (1./diff(rr_sr))*60 ;
         else % Use simulated RR series
             [rr_sr,hrArray,simECGdata] = simECG_generate_sinus_rhythm(srLength,simECGdata); % sinus rhythm rr series
-            sigLength = ceil(simECGdata.Duration);
+            %sigLength = ceil(simECGdata.Duration);
 %             rr_sr = rr_sr(1:srLength);
         end
         
         % Generate atrial fibrillation pacing activity
-        afLength = round(2*sigLength*B_af);
-        if realRRon == 1 % Use real RR series
-            rr_af = simECG_get_real_RR_intervals(1, afLength);  %atrial fibrillation rr series
-        else
-            rr_af = simECG_generate_AF_intervals(fibFreqz,afLength); %atrial fibrillation rr series
-            rr_af = rr_af(1:afLength);
+        if B_af > 0
+            afLength = round(2*sigLength*B_af);
+            if realRRon == 1 % Use real RR series
+                rr_af = simECG_get_real_RR_intervals(1, afLength);  %atrial fibrillation rr series
+            else
+                rr_af = simECG_generate_AF_intervals(fibFreqz,afLength); %atrial fibrillation rr series
+                rr_af = rr_af(1:afLength);
+            end
         end
         
         % Make sure that the average RR value during SR is larger than that in AF
@@ -146,7 +121,7 @@ switch rhythmType  % 0 - sinus rhythm, 1 - AF, 2 - PAF
         end
         
         
-    case 3 % The entire rhythm is SR but for EST signal %CPerez 06/2021
+    case 1 % The entire rhythm is SR but for EST signal %CPerez 06/2021
         srLength = [];
         if realRRon == 1 % Use real RR series
             [rr_sr, simECGdata.peak, fa simECGdata.ecgnr] = simECG_get_real_RR_intervals(2,rrLength); % If opt == 1 - AF, If opt == 2 - SR for stress test
@@ -299,51 +274,60 @@ end
 
 % Transition probabilities
 % SR -> VPB
-p_SR_VPB = n4 / n_sr;
+if (B_sr>0)&&(B_vpb_sr>0)
+    p_SR_VPB = n4 / n_sr;
+    p_VPB_SR = 1;
+else
+    p_SR_VPB = 0;
+    p_VPB_SR = 0;
+end
 if B_sr == 1
     transM(1,1) = 1;
 end
-% AT branch
-p_SR_AT = n1 / n_sr;
-% check whether the simulated record is in permanent AT (it never should however)
-if B_at == 1
-    ps = 3;
-    p_AT_SR = 0;
-    p_AT_VPB = 0;
-    transM(3,3) = 1;
-else
-    if B_at>0
+% AT branch transition to VPB
+if (B_at>0)&&(B_vpb_at>0)
+    if B_sr >0
         p_AT_VPB = ( B_vpb_at * d_at ) / ( B_at * d_vpb_at );
     else
-        p_AT_VPB = 0;
+        p_AT_VPB = 1;
     end
-    p_AT_SR = 1 - p_AT_VPB;
-end
-% AF branch
-p_SR_AF = n3 / n_sr;
-% check whether the simulated record is in permanent AF
-if B_af == 1
-    ps = 2;
-    p_AF_SR = 0;
-    p_AF_VPB = 0;
-    transM(2,2) = 1;
+    p_VPB_AT = 1;
 else
-    if B_af>0
+    p_AT_VPB = 0;
+    p_VPB_AT = 0;
+end
+% AF branch transition to VPB
+if (B_af>0)&&(B_vpb_af>0)
+    if B_sr >0
         p_AF_VPB = ( B_vpb_af * d_af ) / ( B_af * d_vpb_af );
     else
-        p_AF_VPB = 0;
+        p_AF_VPB = 1;
     end
-    p_AF_SR = 1 - p_AF_VPB;
-end
-% BT branch
-p_SR_BT = n2 / n_sr;
-% check whether the simulated record is in permanent BT
-if B_bt == 1
-    ps = 4;
-    transM(4,4) = 1;
-    p_BT_SR = 0;
+    p_VPB_AF = 1;
 else
+    p_AF_VPB = 0;
+    p_VPB_AF = 0;
+end
+% check if sinus rhythm is present in the record
+if B_sr > 0
+    p_SR_AT = n1 / n_sr;
+    p_AT_SR = 1 - p_AT_VPB;
+    p_SR_AF = n3 / n_sr;
+    p_AF_SR = 1 - p_AF_VPB;
+    p_SR_BT = n2 / n_sr;
     p_BT_SR = 1;
+else
+    [B, index] = max([0, B_af, B_at, B_bt]);
+    ps = index;
+    p_SR_AT = 0;
+    p_AT_SR = 0;
+    p_SR_AF = 0;
+    p_AF_SR = 0;
+    p_SR_BT = 0;
+    p_BT_SR = 0;
+    if B == 1
+        transM(ps,ps) = 1;
+    end
 end
 
 transM(1,2) = p_SR_AF;
@@ -353,11 +337,11 @@ transM(3,1) = p_AT_SR;
 transM(1,4) = p_SR_BT;
 transM(4,1) = p_BT_SR;
 transM(1,5) = p_SR_VPB;
-transM(5,1) = 1;
+transM(5,1) = p_VPB_SR;
 transM(2,6) = p_AF_VPB;
-transM(6,2) = 1;
+transM(6,2) = p_VPB_AF;
 transM(3,7) = p_AT_VPB;
-transM(7,3) = 1;    
+transM(7,3) = p_VPB_AT;    
 
 % time counter
 t = 0;
@@ -534,8 +518,13 @@ while t<=sigLengthMs
                         % Tachycardia episode begins
                         bpm_at = ( rand*(2-1.1) + 1.1 ) * hrArray(c_SR);
                         % excessive rates are discarded
+                        it = 1;
                         while (bpm_at > 200)||(bpm_at < 100)
                             bpm_at = ( rand*(2-1.1) + 1.1 ) * hrArray(c_SR);
+                            it = it + 1;
+                            if it == 10
+                                bpm_at = 100*rand + 100;
+                            end
                         end
                         beta_AT = hrArray(c_SR) / bpm_at;
                         % prematurity factor

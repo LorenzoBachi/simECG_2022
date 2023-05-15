@@ -30,7 +30,7 @@ A = Amp(2);
 asf=zeros(1,6);
 for k=1:6
     %amplitude scaling factor
-    asf(k) = max(min(f + (0.2*(rand-0.5)),A),0); % 25% bounded variation around selected value
+    asf(k) = max(min(f + (0.7*(rand-0.5)),A),0); % 35% bounded variation around selected value
 end
 
 alphaiQRS.x = [ -0.05+((-0.4+0.05)*asf(1))      0.4+((1.5-0.4)*asf(2))      0 ];
@@ -56,14 +56,15 @@ Tw = simECG_random_number(0.5, 0.7);
 % Txa = simECG_random_number(0.02, 0.08);
 % Tya = simECG_random_number(0.01, 0.03);
 % Tza = simECG_random_number(-0.02, -0.06);
+Txa = simECG_random_number(0.02, 0.12);
 if f>=0.5 % T wave amplitude depends on QRS amplitude 
-    Txa = simECG_random_number(0.06, 0.12);
-    Tya = simECG_random_number(0.026, 0.05);
-    Tza = simECG_random_number(-0.052, -0.1);
+    %Txa = simECG_random_number(0.06, 0.12);
+    Tya = simECG_random_number(0.03, 0.05);
+    Tza = simECG_random_number(-0.05, -0.1);
 else
-    Txa = simECG_random_number(0.02, 0.08);
-    Tya = simECG_random_number(0.01, 0.034);
-    Tza = simECG_random_number(-0.02, -0.068);
+    %Txa = simECG_random_number(0.02, 0.08);
+    Tya = simECG_random_number(0.01, 0.03);
+    Tza = simECG_random_number(-0.02, -0.06);
 end
     
 

@@ -58,10 +58,8 @@ if ecg_amp < 0
     ecg_amp = 5;
 end
 %maximum and minimum ECG QRST amplitude scaling factor
-max_asf = 1 + (ecg_amp/10);
-min_asf = ecg_amp/	10;
-scale_factor = rand * max_asf + min_asf;
-A = max_asf + min_asf;
+scale_factor = ( rand * 0.5 ) + ecg_amp*0.15;
+A = 0.5 + ecg_amp*0.15 ;
 simECGdata.scale_factor = scale_factor;
 
 %% Normal PQRST complexes generation
@@ -118,7 +116,7 @@ Lv = 800;
 %ventricular QRS complexes increased width
 W = rand * 0;
 %ventricular beat amplitude factor
-vaf = 0.5 + 0.5*(ecg_amp/5) + (0.2*rand - 0.15);
+vaf = 0.75 + ecg_amp*0.05 + ((0.1*rand) - 0.05);
 %multiform VPBs?
 multiform_vpbs = simECGdata.multiform_vpbs;
 switch realVAon
