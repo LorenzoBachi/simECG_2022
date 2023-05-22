@@ -82,7 +82,7 @@ switch onlyRR
         initialParameters.rrLength = rrLength;
         initialParameters.realRRon = realRRon;
         initialParameters.realVAon = realVAon;
-        initialParameters.realVAon = realAAon;
+        initialParameters.realAAon = realAAon;
         initialParameters.noiseType = noiseType;
         initialParameters.noiseRMS = noiseRMS;
         
@@ -129,7 +129,7 @@ switch onlyRR
         initialParameters.rrLength = rrLength;
         initialParameters.realRRon = realRRon;
         initialParameters.realVAon = realVAon;
-        initialParameters.realVAon = realAAon;
+        initialParameters.realAAon = realAAon;
         initialParameters.noiseType = noiseType;
         initialParameters.noiseRMS = noiseRMS;
         
