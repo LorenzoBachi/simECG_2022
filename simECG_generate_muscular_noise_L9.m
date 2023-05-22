@@ -1,4 +1,4 @@
-function [simuMN_15] = simECG_generate_muscular_noise_L9(ecgLength, simECGdata, noiseRMS, signal)
+function [simuMN_15,noiseRMS] = simECG_generate_muscular_noise_L9(ecgLength, simECGdata, noiseRMS, signal)
 % simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
 % signal in mV.
 %
@@ -26,7 +26,7 @@ nu = rand(1)*(0.9995-0.99) + 0.99;
 
 if noiseRMS > 1 %info in dB
     DefnoiseRMS = noiseRMS;
-    Rpos = round(cumsum(simECGdata.RR).*fs); %in samples
+    Rpos = round(cumsum(simECGdata.rr).*fs); %in samples
     noiseRMS = zeros(1,size(signal,1));ppQRS = zeros(1,size(signal,1));
     for l = 1:size(signal,1)
         qrsAll = zeros(100,length(Rpos));
@@ -112,6 +112,11 @@ for ii = 1:L
 end
 
 simuMN = simuMN(:,1:ecgLength).*1e-3; %in mV ->9-standard leads
+
+% Rescale to the desired user RMS
+for iiL = 1:size(simuMN,1)
+    simuMN(iiL,:) = noiseRMS(1,iiL)*(simuMN(iiL,:)/std(simuMN(iiL,1:60*simECGdata.fs)));
+end
 
 % Transform to the 15 leads
 simuMN_12 = leadcalc(simuMN,'extr');% V1,V2,V3,V4,V5,V6,aVL,I,-aVR,II,aVF,III
