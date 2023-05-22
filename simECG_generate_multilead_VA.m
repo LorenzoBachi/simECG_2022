@@ -21,7 +21,7 @@ disp('Generating ventricular activity ...');
 
 rr = (round(rr*1000));    % rr intervals in miliseconds
 rr = [rr(1) rr]';
-Fs = 1000;                      % sampling rate
+Fs = simECGdata.fs;                      % sampling rate
 rr_sec = rr/Fs;
 
 %% QT interval adaptation
