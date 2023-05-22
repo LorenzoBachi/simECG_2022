@@ -15,7 +15,7 @@ function [multileadNoise, poles] = simECG_generate_noise(ecgLength, noiseType, n
 % 3 - baseline wander
 % 4 - mixture of noises
 % 5 - bw + ma because em has residual ECG;
-% 6 - Simulated Muscular Noise %CPerez 07/2022 
+% 6 - Simulated Muscular Noise %CPerez 07/2022
 % 7 - Real Exercise stress test noise (from R. Bailón)
 % 8 - Motion artifacts
 
@@ -103,10 +103,16 @@ switch noiseType
         multileadNoise = simECG_generate_motion_artifact(ecgLength, simECGdata, noiseRMS);%in mVolts
 end
 
-if noiseType > 0 && (noiseType ~=6 && noiseType ~=7 && noiseType ~=8)
+if noiseType > 0 && (noiseType ~=7 && noiseType ~=8)
     % Adjust to desired noise RMS value
-    for i = 1:15
-        multileadNoise(i,:) = noiseRMS*(multileadNoise(i,:)/std(multileadNoise(i,:)));
+    if noiseType == 6
+         for i = 1:15
+            multileadNoise(i,:) = noiseRMS*(multileadNoise(i,:)/std(multileadNoise(i,1:60*simECGdata.fs)));
+        end
+    else
+        for i = 1:15
+            multileadNoise(i,:) = noiseRMS*(multileadNoise(i,:)/std(multileadNoise(i,:)));
+        end
     end
 end
 end
