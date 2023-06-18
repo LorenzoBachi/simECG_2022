@@ -57,7 +57,7 @@ d_bt = 8;    % Median episode length (in beats) for bigeminy and trigeminy
 %% Ventricular Premature Beats
 B_vpb = 0;     % VPB burden
 vpb_p = [0.5,0.5,0]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
-multiform_vpbs = 1; % if this setting is different from 0, different shapes of VPBs may be used in the same record
+multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
 
 %% Noise Parameters
 noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want

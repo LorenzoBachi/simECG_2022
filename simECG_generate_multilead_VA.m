@@ -91,15 +91,6 @@ for i = 1:rrLength+1 % Additonal is required to meet exact number of RR interval
         j = 1;
     end
 end
-D = [
-    -0.515  0.157   -0.917;
-    0.044  0.164   -1.387;
-    0.882  0.098   -1.277;
-    1.213  0.127   -0.601;
-    1.125  0.127   -0.086;
-    0.831  0.076    0.230;
-    0.632 -0.235    0.059;
-    0.235  1.066   -0.132];
 
 %% Ventricular PQRST complexes generation
 % Kors regression transformation
@@ -318,7 +309,7 @@ for lead = 1:numLeads %% Changed in v012020
             area = 0;
             for v = length(vpb_module):-1:round(length(vpb_module)*0.5)
                 area = area + vpb_module(v);
-                if area >= 0.07
+                if area >= 0.05
                     vpb_end = v;
                 end
             end
@@ -336,7 +327,7 @@ for lead = 1:numLeads %% Changed in v012020
             ecgSig(end-nn+1:end) = ecgSig(end-nn+1:end) + QRSTcQ;
         else
             if lead == 1
-                %                     QIndex = [QIndex data.];
+                %QIndex = [QIndex data.];
                 TendIndex = [TendIndex size(ecgSig,2)+length(QRSTc)];
                 %rIndex = [rIndex (rIndex(1,end) + TQlength0 + length(QRSTc) - Rind + RindNext)];
                 if (state_history(beatNr-1)==state_history(beatNr))&&(state_history(beatNr)==5)
@@ -347,8 +338,7 @@ for lead = 1:numLeads %% Changed in v012020
                 rIndex = [rIndex (rIndex(1,end) + rr(beatNr+1) )];
             end
             % adding extra samples to ecgSig to allow for partial
-            % superposition between ecgSig and QRSTcQ (not supported
-            % in previous versions)
+            % superposition between ecgSig and QRSTcQ
             A = length(ecgSig);
             B = rr(beatNr+1);
             C = A - rIndex(beatNr-1);
