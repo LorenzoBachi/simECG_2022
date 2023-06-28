@@ -15,7 +15,7 @@ ar_coeffs = [1.0000   -0.2758    0.3098   -0.1025    0.2495]; % Coeffients for M
 % OR INSTEAD 
 % load("DATA_AR_MN_Dictionary.mat");
 %ar_coeffs = AR_MN(randi([1, size(AR_MN, 1)]), :, randi([1, size(AR_MN, 3)]));
-bernogauss_conv = zeros(size(bernogauss));
+l = length(bernogauss); bernogauss_conv = zeros(l,1);
 N = 400;
 inds = find(bernogauss ~= 0); % finds the non-zero indices from the process
 if ~isempty(inds)
@@ -29,10 +29,18 @@ for q = 1:numel(inds)
     n = K:N;
     h(n) = a1.^(-(K)) * (a2.^(n-K));
     h = h/(max(abs(h)));
+    %{
+    % This code takes a very long time
     spike = zeros(size(bernogauss));
     spike(inds(q)) = bernogauss(inds(q));
     spike_conv = conv(spike, h, 'same'); 
     bernogauss_conv = bernogauss_conv + spike_conv;
+    %}
+    % a more efficient implementation, with the same result since h
+    % tends to zero at the edges
+    bernogauss_conv(max(inds(q)-(N/2),1):min(inds(q)+(N/2)-1,l)) = ...
+        bernogauss_conv(max(inds(q)-(N/2),1):min(inds(q)+(N/2)-1,l)) + ...
+        (bernogauss(inds(q))*h(max((N/2)-inds(q)+2,1):N-max(((inds(q)+(N/2)-1)-l),0)));
 end
 
 ar_input = decimate(bernogauss_conv, 5);

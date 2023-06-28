@@ -1,20 +1,41 @@
 %% ECG SIMULATOR MAIN SCRIPT: USER-DEFINED PARAMETERS, OUTPUT VISUALIZATION
 
-% VERSION: 2022C
-% A contribution to the previous works by
-%     A. Petrėnas et al, 2017: Electrocardiogram modeling duringparoxysmal
-% atrial fibrillation: application to the detection of brief episodes
-%     R. Alcaraz et al, 2019: Reference database and performance evaluation
-%of methods for extraction of atrial fibrillatory waves in the ECG
+% VERSION: 1.0.0 - first public release
 
+% For the scientific materials of this code, please see
+%   L. Bachi, H. Halvaei, C. Pérez, A. Martín-Yebra, A. Petrėnas,
+%   A. Sološenko, L. Johnson, V. Marozas, J. P. Martínez, E. Pueyo,
+%   M. Stridh, P. Laguna, L. Sörnmo, "ECG Modeling for Simulation of
+%   Arrhythmias in Time-Varying Conditions", IEEE Transactions on
+%   Biomedical Engineering, 2023, https://doi.org/10.1109/TBME.2023.3288701
+
+% This is a contribution to the previous work by
+%   A. Petrėnas, V. Marozas, A. Sološenko, R. Kubilius, J. Skibarkienė,
+%   J. Oster and L. Sörnmo, "Electrocardiogram modeling duringparoxysmal
+%   atrial fibrillation: application to the detection of brief episodes",
+%   Physiological Measurement, 2017,
+%   https://doi.org/10.1088/1361-6579/aa9153
+
+% This ECG simulator version was developed by
 % Lorenzo Bachi, PhD student at Scuola Superiore Sant'Anna, Pisa,
-% l.bachi@santannapisa.it, under the supervision of Leif Sörnmo.
-
+% l.bachi@santannapisa.it
 % Cristina Perez, PhD student at Universidad de Zaragoza, Spain,
-% cperez@unizar.es, under the supervision of Leif Sörnmo.
-
+% cperez@unizar.es
 % Hesam Halvaei, PhD student at Lund University, Lund, Sweden
 % hesam.halvaei@bme.lth.se
+% together with the help of all other authors.
+
+% For bug reporting, please email l.bachi@santannapisa.it.
+
+% This software is licensed with GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
+% This software is free and open source. However, please note that that if
+% you distribute or publicly release software that is based on or
+% incorporates GPL-licensed software, you must also distribute it under the
+% GPL-3.0 license.
+
+% The ECG simulator requires data files to run, which can be downloaded at
+% the link you can find in the readme file.
 
 % ECG is simulated @1 KHz.
 
@@ -61,11 +82,11 @@ multiform_vpbs = 0; % if this setting is different from 0, different shapes of V
 
 %% Noise Parameters
 noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS =  [0.15,      0.005,      2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+noiseRMS =  [0.15,      0.01,      2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
 %*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
 
 %Motion artifacts parameters
-simECGdata.MA_Prob = 0.01; %the probability of success, i.e., spikes 
+simECGdata.MA_Prob = 0.05; %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (taking into account in simulated muscular noise)
 simECGdata.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
 
