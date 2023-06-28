@@ -11,7 +11,7 @@ The authors have no intention of adding additional functionalities to the simula
 This ECG simulator is built on the simulator described in A. Petrėnas, V. Marozas, A. Sološenko, R. Kubilius, J. Skibarkienė, J. Oster and L. Sörnmo, "Electrocardiogram modeling duringparoxysmal atrial fibrillation: application to the detection of brief episodes", Physiological Measurement, 2017, [https://doi.org/10.1088/1361-6579/aa9153](doi.org/10.1088/1361-6579/aa9153). In the same fashion of its predecessor, this simulator is licensed with GNU General Public License version 3:
 [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)
 
-Contributors to this code repository:
+Contributors of this code repository:
 
 Lorenzo Bachi, PhD student at Scuola Superiore Sant'Anna, Pisa
 l.bachi@santannapisa.it
