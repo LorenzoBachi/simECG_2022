@@ -12,9 +12,12 @@ This ECG simulator is built on the simulator described in A. Petrėnas, V. Maroz
 [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)
 
 Contributors to this code repository:
+
 Lorenzo Bachi, PhD student at Scuola Superiore Sant'Anna, Pisa
 l.bachi@santannapisa.it
+
 Cristina Perez, PhD student at Universidad de Zaragoza, Spain
 cperez@unizar.es
+
 Hesam Halvaei, PhD student at Lund University, Lund, Sweden
 hesam.halvaei@bme.lth.se
