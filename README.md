@@ -4,7 +4,7 @@ This is the MATLAB code repository for the ECG simulator described in L. Bachi, 
 
 Additional documentation in the form of a user guide will be included here shortly.
 
-The simulator is best used by setting the simulation parameters in the "simECG_main.m" script, and running the script. In order to run, the simulator requires data files which can be downloaded at [https://drive.google.com/drive/folders/1c2Wb5pHfL21iL0CsnQIi7HsPUDi3AFBz?usp=sharing](https://drive.google.com/drive/folders/1c2Wb5pHfL21iL0CsnQIi7HsPUDi3AFBz?usp=sharing).
+The simulator is best used by setting the simulation parameters in the "simECG_main.m" script, and running the script. In order to run, the simulator requires data files which can be downloaded at [https://drive.google.com/drive/folders/102qJePxOXoY1b9GSeYLFgxjiP2WPa5N3?usp=sharing](https://drive.google.com/drive/folders/102qJePxOXoY1b9GSeYLFgxjiP2WPa5N3?usp=sharing)
 
 The authors have no intention of adding additional functionalities to the simulator. However, reporting of bugs or unintended behaviors of the code is very appreciated. If you wish to report a bug or an unintened behavior of the ECG simulator, please email l.bachi@santannapisa.it, possibly by documenting the issue with screenshots.
 
