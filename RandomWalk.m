@@ -1,10 +1,12 @@
 function walkP = RandomWalk(nSteps,p,movMod, movAng)
-%nSteps is number of steps
-%p is the pole with real and imaginary part
-%movMod is the increment/decrement of radious
-%movAng is the increment/decrement of angle
+% [] = RandomWalk() computes the random walk model.
+% 
+% nSteps is number of steps
+% p is the pole with real and imaginary part
+% movMod is the increment/decrement of radious
+% movAng is the increment/decrement of angle
 
-% Copyright (c), Cristina Perez, University of Zaragoza, 08/2022
+% Copyright (c), Cristina Pérez, University of Zaragoza, 08/2022
 
 rad = abs(p);
 ang = angle(p);

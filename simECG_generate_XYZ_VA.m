@@ -1,11 +1,27 @@
 function [pqrstFrank, Qind, Rind, Sind, Tind] = simECG_generate_XYZ_VA(num,Amp)
-%
 % [] = simECG_generate_XYZ_VA() returns simulated QRST complexes.
-% Ventricular activity is simulated by using a dynamic ECG model
-% (Sameni et al. 2007) which is an extended version of a single channel
-% ECG simulator originally proposed in (McSharry et al. 2003). By using this
-% model, three orthogonal Frank leads of N samples length are generated.
-% Ventricular activity is generated in 3 Frank leads
+% Ventricular activity is simulated by using a dynamic ECG model (Sameni et
+% al. 2007) which is an extended version of a single channel ECG simulator
+% originally proposed in (McSharry et al. 2003). By using this model, three
+% orthogonal Frank leads of N samples length are generated. Ventricular
+% activity is generated in 3 Frank leads. For the experiments shown in
+% Bachi et al. (2023), the QRS width parameter W and QRS amplitude scaling
+% Amp were added.
+% 
+% Input arguments:
+% num - number of QRST complexes to be generated.
+% Amp - a two parameter array with the desired minimum and maximum scale
+% factors.
+% 
+% Output arguments:
+% pqrstFrank - Frank leads of the generated QRST complex.
+% Qind - index of Q wave.
+% Rind - index of R wave.
+% Sind - index of S wave.
+% Tind - index of T wave.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 N = 1000;                       % Signal length in samples
 fs = 1000;                      % sampling rate

@@ -1,8 +1,22 @@
 function [simuMN_15,noiseRMS] = simECG_generate_muscular_noise_L9(ecgLength, simECGdata, noiseRMS, signal)
-% simuMN_noise = simECG_Muscular_Noise() returns a simulated muscular noise
-% signal in mV.
+% [] = simECG_Muscular_Noise() returns 15-lead simulated muscular noise
+% signal.
 %
-% Copyright (c), Cristina Perez, University of Zaragoza, 10/2022
+% Input arguments:
+% ecgLength - length of simulated ECG, in samples.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
+% noiseRMS - desired noise level amplitude.
+% signal - matrix of multilead ventricular activity.
+% 
+% Output arguments:
+% simuMN_15 - simulated 15-lead simulated muscular noise.
+% noiseRMS - desired noise level amplitude (updated).
+% 
+% Author: Cristina Perez, University of Zaragoza, 10/2022
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 % 1) Load dictionary AR(p) model and select the parameters that model the quasy-stationay part of
 % the simulated MN signal

@@ -1,10 +1,26 @@
 function [rr,hrmean,simECGdata] = simECG_generate_sinus_rhythm(N,simECGdata)
-%
-% rr = simPAF_gen_SR_RR_intervals() returns synthetic SR RR intervals. 
-% Ventricular rhythm during SR is simulated using RR interval generator 
-% proposed by McSharry et al. (2003) in which both the impact of parasympathetic 
-% stimulation (respiratory sinus arrhythmia) and baroreflex regulation
-% (Mayer waves) is modeled by a bimodal power spectrum.
+% rr = simPAF_gen_SR_RR_intervals() returns synthetic SR RR intervals.
+% Ventricular rhythm during SR is simulated using a novel RR interval
+% generator based on McSharry et al. (2003) in which both the impact of
+% parasympathetic stimulation (respiratory sinus arrhythmia) and baroreflex
+% regulation (Mayer waves) is modeled by a bimodal power spectrum. In this
+% model, time-verying respiration affects parasympathetic modulation. For
+% additional details, please see "ECG Modeling for Simulation of
+% Arrhythmias in Time-Varying Conditions" (2023).
+% 
+% Input arguments:
+% N - number of normal, sinus RR interval to generate.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
+% 
+% Output arguments:
+% rr - simulated sinus rhythm RR series
+% hrmean - mean heart rate
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script (updated).
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 %Last update: CPerez 05/2022
 
@@ -14,12 +30,12 @@ end
 
 switch simECGdata.ESTflag
     case 0 %Any case
-        hrmean = randi([50,80]);         % Generate heart rate from an interval of [50-80] bpm
-        hrstd = randi([5,30])/10;               % Generate SD of heart rate from an interval of [0.5-3] bpm
+        hrmean = randi([50,80]);        % Generate heart rate from an interval of [50-80] bpm
+        hrstd = randi([5,30])/10;       % Generate SD of heart rate from an interval of [0.5-3] bpm
         rrstd = hrstd/60;
-        lfhfratio = randi([5,20])/10;           % Generate LF/HF ratio [0.5 - 2]
-        respRate = randi([20,50])/100;          % Respiratory rate [0.2 - 0.5]
-        MayerFreq = 0.1;                        % Mayer waves
+        lfhfratio = randi([5,20])/10;   % Generate LF/HF ratio [0.5 - 2]
+        respRate = randi([20,50])/100;	% Respiratory rate [0.2 - 0.5]
+        MayerFreq = 0.1;                % Mayer waves
         % Define frequency parameters for RR process
         floStd = 0.1;
         fhiStd = 0.1;

@@ -1,9 +1,11 @@
 function [simECGdata, initialParameters, annotations] = simECG_generator(sigLength, realRRon, realVAon, realAAon, noiseType, noiseRMS, onlyRR, arrhythmiaParameters, simECGdata)
-% [] = simECG_generator() returns a 15-by-N matrix containing 15 lead
-% ECGs. Three types of ECG signals can be generated: SR (AF burden set to 0, 
-% AF (AF burden set to 1) or PAF (AF burden any value from the interval 
-% (0, 1)). Standard leads I, II, III, aVR, aVL, aVF, V1, V2, V3, V4, V5, V6
-% and Frank leads X, Y, Z are generated(sampling frequence 1000 Hz).
+% [] = simECG_generator() returns a 15-by-N matrix of 15-lead ECG. Standard
+% leads I, II, III, aVR, aVL, aVF, V1, V2, V3, V4, V5, V6 and Frank leads
+% X, Y, Z are generated, with a sampling frequency of 1000 Hz. Please note
+% that simulated RR intervals, simulated ventricular activity and simulated
+% atrial activity allow for the maximum control over simulation outcomes.
+% This functions also returns annotations of the simulated record in the
+% MIT-BIH Arrhythmia Database annotation style.
 %
 % Generated leads:
 % multileadVA(1,:) - I      multileadVA(7,:) - V1    multileadVA(13,:) - X     
@@ -14,44 +16,34 @@ function [simECGdata, initialParameters, annotations] = simECG_generator(sigLeng
 % multileadVA(6,:) - aVF    multileadVA(12,:) - V6 
 %
 % Input arguments:
-% rrLength indicates the length of the desired ECG signal (in RR intervals)
-%
-% realRRon 1 indicates that real RR intervals are used, 0 - synthetic
-% realVAon 1 indicates that real ventricular activity is used, 0 - synthetic
-% realAAon 1 indicates that real atrial activity is used, 0 - synthetic
-%
-% onlyRR 1 - only RR intervals are generated, 0 - multilead ECG is generated
-%
-% noiseType: a number from 0 to 4
-% 0 - no noise added (noise RMS = 0 mV)
-% 1 - motion artefacts
-% 2 - electrode movement artefacts
-% 3 - baseline wander
-% 4 - mixture of type 1, type 2 and type 3 noises
-%
-% noiseLevel - noise level in milivolts, i.e. 0.02 corresponds to 20 uV
-%
-% arrhythmiaParameters is a structure containing the following fields:
-% - AFburden is a value between 0 and 1. 0: the entire signal is SR, 
-% 1: the entire signal is AF.
-% - stayInAF denotes the probability to stay in AF
+% sigLength - desired ECG length of the simulated record, in seconds.
+% realRRon - 0 for simulated RR intervals, 1 for real RR intervals.
+% realVAon - 0 for simulated ventricular activity, 1 for real ventricular
+% activity.
+% realAAon - 0 for simulated atrial activity, 1 for real atrial activity.
+% noiseType - an array containing the desired types of noise (eg [3, 6,
+% 8]).
+% noiseRms - the desired root mean square level of each desired noise type.
+% onlyRR 1 - 0 for multilead ECG simulation, 1 for RR series-only
+% simulation.
+% arrhythmiaParameters - struct of arrhythmia simulation parameters defined
+% in the main script.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
 %
 % Output arguments:
-% simECGdata returns generated data (multilead ECG, multilead ventricular
-% activity, multilead atrial activity, QRS index, etc.). initialParameters 
-% returns initial parameter values used to generated ECG signals.   
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script (updated).
+% initialParameters - struct of user-defined parameters as well as f waves
+% fibrillatory frequency.
+% annotations - struct of simulated ECG record annotations in the MIT-BIH
+% Arrhythmia Database style.
 %
-% Known problems:
-% AV node model used for generating RR intervals during AF is relatively slow.
-%
-% Synthetic P wave amplitude is nearly 1.5 lower in several leads than that
-% observed in reality (at least for healthy patients). Parameters for 
-% simulating Type 2 P waves are taken from the paper by Havmoller et al. 
-% Age-related changes in P wave morphology in healthy subjects. 
-% BMC Cardiovascular Disorders, 7(1), 22, 2007.
-%
-% Interpolated TQ intervals (using a cubic spline interpolation) sometimes 
-% do not look realistic.
+% Known problems: AV node model used for generating RR intervals during AF
+% is relatively slow.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 disp('    ECG generator: simulation starting ...');
 
@@ -97,9 +89,8 @@ switch onlyRR
         fibFreqz = simECG_fibrillation_frequency();   
         % Generate RR intervals
         [rrIn,annotations,targets_beats,simECGdata,hrArray,state_history] = simECG_global_rr_intervals(sigLength,fibFreqz, realRRon, arrhythmiaParameters, simECGdata);
-        rrLength = numel(rrIn);
         % Generate multilead ventricular activity
-        [QRSindex, TendIndex,rr, multileadVA, ecgLength, simECGdata] = simECG_generate_multilead_VA(rrLength, targets_beats, rrIn, realVAon, simECGdata,state_history); %_QTC adde by Alba 19/03
+        [QRSindex, TendIndex,rr, multileadVA, ecgLength, simECGdata] = simECG_generate_multilead_VA(targets_beats, rrIn, realVAon, simECGdata,state_history); %_QTC adde by Alba 19/03
         % Generate multilead atrial activity
         multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, arrhythmiaParameters.B_af, simECGdata);
         % Generate multilead noise
@@ -126,7 +117,7 @@ switch onlyRR
         simECGdata.hrArray = hrArray;
         
         initialParameters.fibFreqz = fibFreqz;
-        initialParameters.rrLength = rrLength;
+        initialParameters.rrLength = length(rr);
         initialParameters.realRRon = realRRon;
         initialParameters.realVAon = realVAon;
         initialParameters.realAAon = realAAon;

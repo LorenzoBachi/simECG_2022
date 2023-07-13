@@ -1,14 +1,34 @@
 function multileadAA = simECG_generate_multilead_AA(targets_beats, QRSindex, fibFreqz, realAAon, ecgLength, B_af, simECGdata)
-% multileadAA = simECG_gen_multilead_AA() returns multilead (15 lead) atrial
-% activity. 
-%
-% Generated leads:
-% multileadAA(1,:) - I      multileadAA(7,:) - V1    multileadAA(13,:) - X     
-% multileadAA(2,:) - II     multileadAA(8,:) - V2    multileadAA(14,:) - Y  
-% multileadAA(3,:) - III    multileadAA(9,:) - V3    multileadAA(15,:) - Z  
-% multileadAA(4,:) - aVR    multileadAA(10,:) - V4 
-% multileadAA(5,:) - aVL    multileadAA(11,:) - V5 
-% multileadAA(6,:) - aVF    multileadAA(12,:) - V6 
+% [] = simECG_gen_multilead_AA() returns multilead (15 lead) atrial
+% activity. For additional infomation, please see A. Petrėnas, V. Marozas,
+% A. Sološenko, R. Kubilius, J. Skibarkienė, J. Oster and L. Sörnmo,
+% "Electrocardiogram modeling duringparoxysmal atrial fibrillation:
+% application to the detection of brief episodes", Physiological
+% Measurement, 2017, https://doi.org/10.1088/1361-6579/aa9153. In the 2017
+% ECG simulator, it was reported that "synthetic P wave amplitude is nearly
+% 1.5 lower in several leads than that observed in reality (at least for
+% healthy patients). Parameters for simulating Type 2 P waves are taken
+% from the paper by Havmoller et al. Age-related changes in P wave
+% morphology in healthy subjects. BMC Cardiovascular Disorders, 7(1), 22,
+% 2007." For this reason, a P wave scaling parameter was added for the
+% experiments shown in Bachi et al. (2023).
+% 
+% Input arguments:
+% targets_beats - array of beat codes.
+% QRSindex - array of heartbeat time indexes (in samples).
+% fibFreqz - frequency of fibrillatory waves, in Hz.
+% realAAon - 0 for fully simulated P waves, 1 for real P waves from a
+% database of arial fibrillation ECGs.
+% ecgLength - length of ECG signal, in samples.
+% B_af - desired burden of atrial fibrillation.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
+% 
+% Output arguments:
+% multileadAA - simulated multilead atrial activity.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 %Last update: CPerez 05/2022
 
@@ -243,7 +263,7 @@ switch rhythmType
         
 end
 
-% amplitude scaling factor
+% amplitude scaling factor - Lorenzo
 scale_factor = simECGdata.scale_factor;
 multileadAA = (1 + rand*(scale_factor+0.25))*multileadAA;
 

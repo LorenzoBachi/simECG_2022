@@ -1,8 +1,18 @@
 function fWaves = simECG_generate_single_lead_f_waves(fWaveLength, fibFreqz, fWavesRMS)
-%
-% fWaves = simECG_generate_single_lead_f_waves() returns single lead f-waves,
+% [] = simECG_generate_single_lead_f_waves() returns single lead f-waves,
 % modeled using an extended sawtooth f wave model.
-%
+% 
+% Input arguments:
+% fWaveLength - desired wavelength of f waves.
+% fibFreqz - frequency of fibrillatory waves, in Hz.
+% fWavesRMS - root mean square amplitude of the f waves.
+% 
+% Output arguments:
+% fWaves - simualted single lead f-waves.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
+
 Fs = 1000;
 fWaveLength = fWaveLength+1000;      %Prolong f wave signal
 df = 0.25;

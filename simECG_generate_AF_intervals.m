@@ -1,8 +1,11 @@
 function rr = simECG_generate_AF_intervals(lamba,nRR)
-% rr = simECG_generate_AF_intervals() returns AF RR series modelled according
+% [] = simECG_generate_AF_intervals() returns AF RR series modelled according
 % to the paper by Corino et al. An atrioventricular node model for analysis
 % of the ventricular response during atrial fibrillation. IEEE Transactions
 % on Biomedical Engineering. 2011, 58(12), 3386-3395.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html 
 
 if nRR < 70       
     time = 1;

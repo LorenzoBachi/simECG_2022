@@ -1,27 +1,30 @@
 function [DIP, teta]= simECG_dipole_generator(N,fs,f,alphai,bi,tetai,teta0)
-% 
-% [DIP, teta]= simECG_dipole_generator(N,fs,f,alphai,bi,tetai,teta0) 
-% Synthetic cardiac dipole generator using the 'differential form' of the 
-% dipole equations. For further details see a paper by Sameni et al. 
-% Multichannel ECG and noise modeling: application to maternal and fetal
-% ECG signals. EURASIP Journal on Advances in Signal Processing.
+% []= simECG_dipole_generator() Synthetic cardiac dipole generator using
+% the 'differential form' of the dipole equations. For further details see
+% a paper by Sameni et al. Multichannel ECG and noise modeling: application
+% to maternal and fetal ECG signals. EURASIP Journal on Advances in Signal
+% Processing.
 %
-% inputs: 
-% N: signal length 
-% fs: sampling rate 
-% f: heart rate (Hz) 
-% alphai: structure contaning the amplitudes of Gaussian functions used for 
-%       modeling the x, y, and z coordinates of the cardiac dipole 
-% bi: structure contaning the widths of Gaussian functions used for 
-%       modeling the x, y, and z coordinates of the cardiac dipole 
-% tetai: structure contaning the phase of Gaussian functions used for 
-%       modeling the x, y, and z coordinates of the cardiac dipole 
-% teta0: initial phase of the synthetic dipole 
+% Input arguments:
+% N - signal length, in samples.
+% fs - sampling rate.
+% f - heart rate, in Hz. 
+% alphai - structure contaning the amplitudes of Gaussian functions used for 
+%       modeling the x, y, and z coordinates of the cardiac dipole.
+% bi - structure contaning the widths of Gaussian functions used for 
+%       modeling the x, y, and z coordinates of the cardiac dipole.
+% tetai - structure contaning the phase of Gaussian functions used for 
+%       modeling the x, y, and z coordinates of the cardiac dipole.
+% teta0 - initial phase of the synthetic dipole .
 % 
-% output: 
-% DIP: structure contaning the x, y, and z coordinates of the cardiac dipole 
-% teta: vector containing the dipole phase 
+% Output arguments:
+% DIP - structure contaning the x, y, and z coordinates of the cardiac
+% dipole. 
+% teta - vector containing the dipole phase.
 % 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html 
+
 w = 2*pi*f; 
 dt = 1/fs; 
  

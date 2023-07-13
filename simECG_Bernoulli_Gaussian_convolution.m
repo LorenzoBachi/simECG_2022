@@ -1,15 +1,18 @@
-function [simNoise] = simECG_Bernoulli_Gaussian_convolution(len, bernogauss, MA_Flag);
-% func_BernoulliGaussianConvolution 
-% Convolution of the a realizaiton of bernoulli gaussian process and filtering
-% INPUTS
-% bernogauss: a bernoulli gaussian realization
-% MA_Flag: 0 Holter /1 ThumbECG
-
-% OUTPUT 
-% simNoise: simulated noise
-%--------
-% Hesam Halvaei, Lund University
-%--------
+function [simNoise] = simECG_Bernoulli_Gaussian_convolution(len, bernogauss, MA_Flag)
+% [] = simECG_Bernoulli_Gaussian_convolution() returns the realization of
+% a Bernoulli-Gaussian process.
+% 
+% Input arguments:
+% bernogauss - a Bernoulli-Gaussian process realization.
+% MA_Flag- 0 for Holter signals, 1 for ThumbECG.
+% 
+% Output arguments:
+% simNoise - simulated noise.
+% 
+% Author: Hesam Halvaei, Lund University
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 ar_coeffs = [1.0000   -0.2758    0.3098   -0.1025    0.2495]; % Coeffients for MA
 % OR INSTEAD 

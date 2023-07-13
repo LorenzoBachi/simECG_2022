@@ -1,11 +1,25 @@
 function [vpb] = simECG_generate_XYZ_ventricular_VA(fitCoeff,J)
-%
 % [] = simECG_generate_ventricular_XYZ_VA() returns simulated QRST for
 % ventricular beats, generated from the Hermite and logistic function
-% coefficients resulting from fitting the VPB from Alzaraz database. The
-% fitting was performed according to Sörnmo et al. 1981 and Bock et al.,
-% 2021. Generated VPBs are 800 samples long at 1000 Hz, in the Frank lead
-% space.
+% coefficients resulting from fitting the VPB extracted from the St
+% Petersburg INCART 12-lead database. The fitting was performed according
+% to Sörnmo et al. 1981 and Bock et al., 2021 and described in Bachi et
+% al., 2023. Generated VPBs are 800 samples long at 1000 Hz. Generated
+% leads are I, II, and V1 to V6.
+% 
+% Input arguments:
+% fitCoeff - coefficients of the VPB to be simulated, extracted from the
+% coefficient library.
+% J - the junction point between QRS complex and T wave, extracted from the
+% coefficient library.
+% 
+% Output arguments:
+% vpb - 8-lead simulated QRST complex of the VPB.
+% 
+% Author: Lorenzo Bachi, Sant'Anna School of Advanced Studies
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 %get size of fitCoeff
 dims = size(fitCoeff);
@@ -82,15 +96,15 @@ end
 end
 
 function [f] = simECG_hermite_function(n,sigma,t)
-%SIMECG_HERMITE_FUNCTION computes the n-th Hermite function. 
+%[] = simECG_hermite_function() computes the n-th Hermite function. 
 
 f = 1/sqrt(sigma*(2^n)*factorial(n)*sqrt(pi)) * ( exp((-(t.^2))/(2*(sigma^2))) .* simECG_hermite_polynomial(n,t/sigma) ) ;
 
 end
 
 function [p] = simECG_hermite_polynomial(n,x)
-%SIMECG_HERMITE_POLYNOMIAL returns the n-th phycisit's Hermite polynomial calculated
-%over x. Only first eight polynomials are considered.
+%[] = simECG_hermite_polynomial() returns the n-th phycisit's Hermite
+%polynomial calculated over x. Only first eight polynomials are considered.
 
 switch n
     case 0
@@ -116,7 +130,7 @@ end
 end
 
 function [f] = simECG_logistic_function(t)
-%SIMECG_LOGISTIC FUNCTION computes the logistic function.
+%[] = simECG_logistic_function() computes the logistic function.
 
 f = 1 ./ (1 + exp(t));
 

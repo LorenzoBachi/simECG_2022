@@ -6,5 +6,8 @@ function fibFreqz = simECG_fibrillation_frequency()
 % characteristics of paroxysmal atrial fibrillation in humans. Europace, 9,
 % 466-470. 2007. 
 %
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html 
+
 fibFreqz = randi([30 70])/10;
 end

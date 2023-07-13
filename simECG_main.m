@@ -1,6 +1,6 @@
 %% ECG SIMULATOR MAIN SCRIPT: USER-DEFINED PARAMETERS, OUTPUT VISUALIZATION
 
-% VERSION: 1.0.0 - first public release
+% VERSION: 1.0.1 - July 2023, updated function description
 
 % For the scientific materials of this code, please see
 %   L. Bachi, H. Halvaei, C. Pérez, A. Martín-Yebra, A. Petrėnas,
@@ -27,15 +27,14 @@
 
 % For bug reporting, please email l.bachi@santannapisa.it.
 
-% This software is licensed with GNU General Public License version 3:
-% https://www.gnu.org/licenses/gpl-3.0.html
-% This software is free and open source. However, please note that that if
-% you distribute or publicly release software that is based on or
-% incorporates GPL-licensed software, you must also distribute it under the
-% GPL-3.0 license.
+% This software is licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html This software is free and open
+% source. However, please note that that if you distribute or publicly
+% release software that is based on or incorporates GPL-licensed software,
+% you must also distribute it under the GPL-3.0 license.
 
 % The ECG simulator requires data files to run, which can be downloaded at
-% the link you can find in the readme file.
+% the link found in the readme file.
 
 % ECG is simulated @1 KHz.
 
@@ -50,8 +49,8 @@ realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
 simECGdata.fs = 1000; %sampling frequency
 
 %% Atrial Fibrillation
-B_af = 0;     % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
-d_af = 100;      % Median episode length > in beats <
+B_af = 0;           % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
+d_af = 100;         % Median episode length > in beats <
 % default from the MIt-BIH Arrhythmia and Atrial Fibrillation Database: 85
 
 %% Atrial Tachycardia
@@ -69,62 +68,64 @@ at_x = 1:50;
 apb_p = [0.3,0.3,0.3,0]; %[0.3,0.3,0.3,0.1]; % probability of the four APB classes
 
 %% Bigeminy, Trigeminy
-B_bt = 0; % Bigeminy and trigeminy burden
-p_bt = [0.5, 0.5]; % differential probability of bigeminy vs trigeminy
+B_bt = 0;           % Bigeminy and trigeminy burden
+p_bt = [0.5, 0.5];  % differential probability of bigeminy vs trigeminy
 % default: [0.72, 1-0.72]
-d_bt = 8;    % Median episode length (in beats) for bigeminy and trigeminy
+d_bt = 8;           % Median episode length (in beats) for bigeminy and trigeminy
 % default from the MIt-BIH Arrhythmia Database: 8
 
 %% Ventricular Premature Beats
-B_vpb = 0;     % VPB burden
-vpb_p = [0.5,0.5,0]; %[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
+B_vpb = 0;          % VPB burden
+vpb_p = [0.5,0.5,0];%[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
 multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
 
 %% Noise Parameters
-noiseType = [3,           6,        8];        % Type of noise. Vector with the number of all type of noise you want
-noiseRMS =  [0.15,      0.01,      2]; % Noise level in millivolts. Vector with each RMS level according to the selected noises
+% Type of noise, a vector with the codes of all types of desired noise:
+% 0 - No noise added (noise RMS = 0 mV)
+% 1 - Motion artefacts
+% 2 - Electrode movement
+% 3 - Baseline wander
+% 4 - Mixture of noises
+% 5 - Bw + ma because em has residual ECG;
+% 6 - Simulated muscular noise %CPerez 07/2022
+% 7 - Real exercise stress test noise (from R. Bailón)
+% 8 - Motion artifacts
+noiseType = [3,           6,        8];
+% Noise level in millivolts, a vector with each RMS level according to the
+% selected noise sources
+noiseRMS =  [0.15,      0.01,      2]; 
 %*Note: if noiseType == 6 or 7, it can be defined a SNR value (in dB) instead of mV value.
 
 %Motion artifacts parameters
-simECGdata.MA_Prob = 0.05; %the probability of success, i.e., spikes 
+simECGdata.MA_Prob = 0.05;  %the probability of success, i.e., spikes 
 %Thumb-ECG parameter (taking into account in simulated muscular noise)
-simECGdata.MA_Flag = 0; % 0 - Holter recording  1 - Thumb-ECG
-
-% 0 - no noise;
-% 1 - motion artifact;
-% 2 - electrode movement
-% 3 - baseline wander;
-% 4 - a mixture of all noises;
-% 5 - bw + ma because em has residual ECG;
-% 6 - Simulated Muscular Noise;
-% 7 - Real Exercise stress test noise (from R. Bailón)
-% 8 - Simulated Motion artifacts
+simECGdata.MA_Flag = 0;     % 0 - Holter recording  1 - Thumb-ECG
 
 %% Exercise stress test parameters %CPerez 03/2022
 %  WARNING : cannot select real atrial activity and synthetic ventricular activity
-simECGdata.ESTflag = 0;     % 1- Exercise Stress Test flag, 0 - other cases
+simECGdata.ESTflag = 0;                         % 1- Exercise Stress Test flag, 0 - other cases
 if simECGdata.ESTflag
-    simECGdata.Basal = randi([1,3],1)*60;      %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
-    simECGdata.Exercise = randi([7,12],1)*60;    % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
-    simECGdata.Recovery = randi([3,5],1)*60; %Duration of Recovery Stress Test in seconds. %Cris 04/2022
-    simECGdata.Basal2 = randi([1,2],1)*60; %Basal area before Exercise Stress Test ends. %Cris 04/2022
+    simECGdata.Basal = randi([1,3],1)*60;       %Basal area before Exercise Stress Test starts, in seconds. %Cris 04/2022
+    simECGdata.Exercise = randi([7,12],1)*60;   % Duration of Exercise in Exercise Stress Test in seconds. %Cris 04/2022
+    simECGdata.Recovery = randi([3,5],1)*60;    %Duration of Recovery Stress Test in seconds. %Cris 04/2022
+    simECGdata.Basal2 = randi([1,2],1)*60;      %Basal area before Exercise Stress Test ends. %Cris 04/2022
     
     simECGdata.Duration = simECGdata.Basal +simECGdata.Exercise + simECGdata.Recovery + simECGdata.Basal2; %Duration of Exercise Stress Test in seconds. %Cris 04/2022
     simECGdata.peak = simECGdata.Basal +simECGdata.Exercise;    % peak of Exercise Stress Test in seconds. %Cris 04/2022
     sigLength =  simECGdata.Duration;
-    simECGdata.RRini = 60/randi([55,65],1);    % onset HR express according to RR in seconds. %Cris 04/2022
-    simECGdata.RRpeak = 60/randi([170,185],1);    % HR express according to RR in seconds at exercise peak. %Cris 04/2022
+    simECGdata.RRini = 60/randi([55,65],1);     % onset HR express according to RR in seconds. %Cris 04/2022
+    simECGdata.RRpeak = 60/randi([170,185],1);  % HR express according to RR in seconds at exercise peak. %Cris 04/2022
     simECGdata.RRend = simECGdata.RRini*1.2;    % final HR express according to RR in seconds. %Cris 04/2022
     
     simECGdata.Frini = simECG_random_number(0.25, 0.35);    % onset Respiratory frequency in Hz. %Cris 04/2022
-    simECGdata.Frpeak = simECG_random_number(0.65, 0.75);    % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
+    simECGdata.Frpeak = simECG_random_number(0.65, 0.75);   % Respiratory frequency at exercise peak in Hz. %Cris 04/2022
     simECGdata.Frend = simECG_random_number(0.25, 0.35);    % final Respiratory frequency in Hz. %Cris 04/2022
 end
 
 %% Amplitude scaling
-% WARNING: This feature is still in development. Use with caution!
-% These factors only work for simulated ventricular and atrial activity at
-% the moment.
+% WARNING: This feature is still in development. Use with caution! This
+% amplitude factor only works for simulated ventricular and atrial
+% activity.
 ecg_amp = rand*10; %ECG signal amplitude scaling factor, a real number. Default is rand*10, minimum is zero
 
 %% ECG Generator

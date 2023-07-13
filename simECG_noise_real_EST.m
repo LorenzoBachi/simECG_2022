@@ -1,7 +1,21 @@
 function [noiseAll_15] = simECG_noise_real_EST(ecgLength, simECGdata, noiseRMS, signal)
-% noiseAll_15 = simECG_noise_real_EST() returns one real Exercise Stress Test noise signal adapted to the ECG length.
-%
-% Copyright (c), Cristina Perez, University of Zaragoza, 09/2022
+% [] = simECG_noise_real_EST() returns 15-lead real exercise stress test
+% noise signal adapted to the ECG length.
+% 
+% Input arguments:
+% ecgLength - length of simulated ECG, in samples.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
+% noiseRMS - desired noise level amplitude.
+% signal - matrix of multilead ventricular activity.
+% 
+% Output arguments:
+% noiseAll_15 - real 15-lead simulated muscular noise.
+% 
+% Author: Cristina Perez, University of Zaragoza, 09/2022
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 load('DATA_MNnoises_EST_real');
 

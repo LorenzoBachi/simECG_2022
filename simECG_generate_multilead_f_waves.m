@@ -1,22 +1,20 @@
 function multilead_f_waves = simECG_generate_multilead_f_waves(fibFreqz, fWaveLength)
-% multilead_f_waves = simECG_generate_multilead_f_waves() returns multilead (15 lead) 
-% simulated f-waves generated using an extended sawtooth f wave model. For
-% details see a paper by Petrenas et al. An echo state neural network for
-% QRST cancellation during atrial fibrillation. Transactions on Biomedical
-% Engineering, 59(10), 2012. f-waves model is further extended by adding low
-% frequency and high frequency noise components.
-%
-% Generated leads:
-% multilead_f_waves(1,:) - I        multilead_f_waves(7,:) - V1           
-% multilead_f_waves(2,:) - II       multilead_f_waves(8,:) - V2        
-% multilead_f_waves(3,:) - III      multilead_f_waves(9,:) - V3        
-% multilead_f_waves(4,:) - aVR      multilead_f_waves(10,:) - V4 
-% multilead_f_waves(5,:) - aVL      multilead_f_waves(11,:) - V5 
-% multilead_f_waves(6,:) - aVF      multilead_f_waves(12,:) - V6 
-%
-% multilead_f_waves(13,:) - X
-% multilead_f_waves(14,:) - Y
-% multilead_f_waves(15,:) - Z
+% [] = simECG_generate_multilead_f_waves() returns 15-lead simulated
+% f-waves generated using an extended sawtooth f wave model. For details
+% see a paper by Petrenas et al. An echo state neural network for QRST
+% cancellation during atrial fibrillation. Transactions on Biomedical
+% Engineering, 59(10), 2012. f-waves model is further extended by adding
+% low frequency and high frequency noise components.
+% 
+% Input arguments:
+% fibFreqz - frequency of fibrillatory waves, in Hz.
+% fWaveLength - desired wavelength of f waves.
+% 
+% Output arguments:
+% multilead_f_waves - simulated multilead f-waves.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 
 % Guillem matrix (optimized for reconstructing 12 lead ECG from vcg)

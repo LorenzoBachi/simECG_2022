@@ -1,24 +1,41 @@
-function [QRSindex, TendIndex, rr, multileadVA, ecgLength, simECGdata] = simECG_generate_multilead_VA(rrLength, targets_beats, rr, realVAon, simECGdata,state_history)
-% [] = simECG_gen_multilead_VA() returns multilead (15 lead) ventricular
-% activity. A set of 100 15-lead ECGs with SR selected from the PTB Diagnostic
-% ECG Database is used as a basis for modeling ventricular activity. The ECGs
-% of the PTB database are first subjected to baseline removal and QRST delineation.
-% The original T-waves are then resampled to a fixed width and, depending on
-% the type of rhythm, width-adjusted to match prevailing heart rate. Since
-% the original ECGs last just for about 2 min, QRST complexes are subjected
-% to repeated concatenation until desired length of ECG is obtained. The TQ
-% interval is interpolated using a cubic spline interpolation.
+function [QRSindex, TendIndex, rr, multileadVA, ecgLength, simECGdata] = simECG_generate_multilead_VA(targets_beats, rr, realVAon, simECGdata,state_history)
+% [] = simECG_gen_multilead_VA() returns 15-lead ventricular activity. A
+% set of 100 15-lead ECGs with SR selected from the PTB Diagnostic ECG
+% Database is used as a basis for modeling ventricular activity of
+% supraventricular beats. The ECGs of the PTB database are first subjected
+% to baseline removal and QRST delineation. The original T-waves are then
+% resampled to a fixed width and, depending on the type of rhythm,
+% width-adjusted to match prevailing heart rate. Since the original ECGs
+% last just for about 2 min, QRST complexes are subjected to repeated
+% concatenation until desired length of ECG is obtained. The TQ interval is
+% interpolated using a cubic spline interpolation. The ventricular beats
+% are modeled from ventricular beats extracted from the St Petersburg
+% INCART 12-lead database, using Hermite functions as a basis.
 %
-%Generated leads:
-% multileadVA(1,:) - I        multileadVA(7,:) - V1      multileadVA(13,:) - X
-% multileadVA(2,:) - II       multileadVA(8,:) - V2      multileadVA(14,:) - Y
-% multileadVA(3,:) - III      multileadVA(9,:) - V3      multileadVA(15,:) - Z
-% multileadVA(4,:) - aVR      multileadVA(10,:) - V4
-% multileadVA(5,:) - aVL      multileadVA(11,:) - V5
-% multileadVA(6,:) - aVF      multileadVA(12,:) - V6
+% Input arguments:
+% targets_beats - array of beat codes.
+% rr - RR series of the simulated record.
+% realVAon - 0 for fully simulated venricular activity, 1 for real atrial
+% activity from the PTB database 
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
+% state_history - array of Markov chain states.
+%
+% Output arguments:
+% QRSindex - array of heartbeat time indexes (in samples).
+% TendIndex: array of T end time indexes (in samples).
+% rr - RR series of the simulated record (updated).
+% multileadVA - simulated multilead ventricular activity.
+% ecgLength - length of simulated ECG, in samples.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script (updated).
+%
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 disp('Generating ventricular activity ...');
 
+rrLength = length(rr);
 rr = (round(rr*1000));    % rr intervals in miliseconds
 rr = [rr(1) rr]';
 Fs = simECGdata.fs;                      % sampling rate

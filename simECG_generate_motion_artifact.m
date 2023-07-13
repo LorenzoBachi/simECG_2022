@@ -1,8 +1,21 @@
 function [simuMA] = simECG_generate_motion_artifact(ecgLength, simECGdata, noiseRMS)
-% simECG_generate_motion_artifact returns a simulated motion artifact
-%--------
-% Hesam Halvaei, Lund University
-%--------
+% [] = simECG_generate_motion_artifact() returns a 15-lead simulated motion
+% artifact.
+% 
+% Input arguments:
+% ecgLength - length of signal, in samples.
+% simECGdata - struct of ECG simulation parameters defined in the main
+% script.
+% noiseRMS - desired noise level amplitude.
+% 
+% Output arguments:
+% simuMA - simulated 15-lead motion artifact.
+% 
+% Author: Hesam Halvaei, Lund University
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
+
 sigmay = 0.03*noiseRMS; 
 
 % if simECGdata.MA_Flag %Thumb-ECG
@@ -28,5 +41,6 @@ simuMA = bernogauss_conv;
     
     simuMA = simuMA_15;
 % end
+
 end
 

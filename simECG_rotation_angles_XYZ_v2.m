@@ -1,10 +1,20 @@
 function [ Q, phiX, phiY, phiZ] = simECG_rotation_angles_XYZ_v2( Fr, T, Fs, Zr)
-%% Rotation matrix Q with time-varying angles (phiX(n), phiY(n), phiZ(n)) 
-% Fr : Respiratory Pattern (in Hz)
-% Tr : Time vector for Fr (in sec)
-% T  : Length of ECG (in sec)
-% Fs : Sampling Frequency (in Hz)
-% Zr : Maximum angular variation (rad/sec)
+% [] = simECG_rotation_angles_XYZ_v2() calculates the rotation matrix Q
+% with time-varying angles (phiX(n), phiY(n), phiZ(n)).
+% 
+% Input arguments:
+% Fr - respiratory Pattern, in Hz.
+% Tr - time vector for Fr, in seconds.
+% T  - length of ECG, in seconds.
+% Fs - sampling Frequency, in Hz.
+% Zr - maximum angular variation, in rad/sec.
+% 
+% Output arguments:
+% Q - the rotation matrix.
+% phiX, phiY, phiZ - the time varying angles.
+% 
+% Licensed under GNU General Public License version 3:
+% https://www.gnu.org/licenses/gpl-3.0.html
 
 %Last update: CPerez 05/2022
 

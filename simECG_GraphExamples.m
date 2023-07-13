@@ -1,5 +1,9 @@
-% Copyright (c), Cristina Pérez, Zaragoza University, Spain
-% last revision: Aug 2022
+% Code used to generate the ECG examples in the paper "ECG Modeling for
+% Simulation of Arrhythmias in Time-Varying Conditions" (2023).
+% 
+% Copyright (c), Cristina Pérez, University of Zaragoza
+% last revision: 08 2022
+
 clc
 %1) Load examples (each row is a single-lead ECG signal of 15-s duration)
 fs = 1000;
