@@ -1,6 +1,6 @@
 %% ECG SIMULATOR MAIN SCRIPT: USER-DEFINED PARAMETERS, OUTPUT VISUALIZATION
 
-% VERSION: 1.0.1 - July 2023, updated function descriptions
+% VERSION: 1.0.2 - July 2023, fixed real activity generation
 
 % For the scientific materials of this code, please see
 %   L. Bachi, H. Halvaei, C. Pérez, A. Martín-Yebra, A. Petrėnas,
