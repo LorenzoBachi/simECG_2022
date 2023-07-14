@@ -56,7 +56,6 @@ tau_s = 25;
 tau = tau_s*nfreq; % tau in samples, according to sampling frequency
 alpha = exp(-1/tau); %de los valores de la tesis de Esther
 k=(1-alpha)/(1-alpha^N);
-
 for i=N:size(RR_ori,1)
     RR_exp (i)= k*sum(exp(-j2/tau).*RR_ori(i-j2)); %la exponencial es decreciente, dando mayor peso al primero, que es el más actual
 end
@@ -98,7 +97,7 @@ end
 arraySize = length(data.pqrst(1,:,1));
 pqrstLength = length(data.pqrst(1,1,:));
 numLeads = size(data.pqrst,1);
-pqrst = zeros(numLeads,rrLength,pqrstLength); %% Changed in v012020
+pqrst = zeros(numLeads,rrLength,pqrstLength);
 
 j = 1;
 for i = 1:rrLength+1 % Additonal is required to meet exact number of RR intervals
@@ -110,6 +109,7 @@ for i = 1:rrLength+1 % Additonal is required to meet exact number of RR interval
 end
 
 %% Ventricular PQRST complexes generation
+realVPBon = simECGdata.realVPBon; % real ventricular activity is turned off (a few beats from the INCART database are noisy)
 % Kors regression transformation
 K = transpose([ 0.380,  -0.070,   0.110;...
     -0.070,   0.930,  -0.230;...
@@ -125,15 +125,16 @@ Lv = 800;
 W = rand * 0;
 %ventricular beat amplitude factor
 vaf = 0.75 + ecg_amp*0.05 + ((0.1*rand) - 0.05);
+%power scaling factor with real ventricular activity (if realVAon = 1)
+pf = 1.4+0.2*rand;
 %multiform VPBs?
 multiform_vpbs = simECGdata.multiform_vpbs;
-switch realVAon
-    case 0 % Generate ventricular complexes from the Hermite-logistic
-        %function model
-        load('DATA_ventricular_coefficients');
-    case 1 % Load random patch of ventricular PQRST complexes from
-        %Alcaraz's Database
-        load('DATA_ventricular_real');
+if (realVPBon)&&(realVAon)
+    % load real VPBs from the St Petersburg INCART 12-lead database
+    load('DATA_ventricular_real');
+else
+    %generate ventricular complexes from the Hermite-logistic function model
+    load('DATA_ventricular_coefficients');
 end
 % number of ventricular beats that are present in the record
 Nbvt = sum(targets_beats==4);
@@ -155,20 +156,36 @@ if Nbvt
             vpb_to_add = vpb_record_beat(:,vpb_record_beat(1,:)==k);
             Nvpb_c = sum(vpb_record_beat(1,:)==k);
             if Nvpb_c
-                switch realVAon
-                    case 0
-                        fitCoeff = DATAventricularCoefficients(k).fitCoeff;
-                        fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
-                        fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
-                        vpb0 = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
-                        vpb_R = DATAventricularCoefficients(k).R;
-                    case 1
-                        vpb0 = DATAventricularReal(k).qrst;
-                        vpb_R = DATAventricularReal(k).R;
-                end
-                for b = 1:Nvpb_c
-                    bb = bb + 1;
-                    vpb(bb,:,:) = vpb0(vpb_to_add(2,b),:,:) .* vaf;
+                if (realVPBon)&&(realVAon)
+                    % real VPBs are 600ms long and must be put in 800ms long
+                    % arrays
+                    vpb0 = DATAventricularReal(k).qrst;
+                    vpb_R = DATAventricularReal(k).R;
+                    for b = 1:Nvpb_c
+                        bb = bb + 1;
+                        % amplitude factor
+                        vaf = pf * (sum(sum(abs(squeeze(pqrst([1,2,7:12],1,:)))))/8)/(sum(sum(abs(squeeze(vpb0(vpb_to_add(2,b),:,:)))))/8);
+                        for l=1:8
+                            vpb_temp = squeeze(vpb0(vpb_to_add(2,b),l,:));
+                            lf1 = vpb_temp(1)*(1./(1+exp(((100:-1:1)-50)/9)));
+                            lf2 = vpb_temp(end)*(1./(1+exp(((1:100)-50)/9)));
+                            vpb(bb,l,:) = ([lf1,vpb_temp',lf2]) .* vaf;
+                        end
+                    end
+                else
+                    fitCoeff = DATAventricularCoefficients(k).fitCoeff;
+                    fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
+                    fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
+                    vpb0 = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
+                    vpb_R = DATAventricularCoefficients(k).R;
+                    for b = 1:Nvpb_c
+                        bb = bb + 1;
+                        % amplitude factor
+                        if realVAon
+                            vaf = pf * (sum(sum(abs(squeeze(pqrst([1,2,7:12],1,:)))))/8)/(sum(sum(abs(squeeze(vpb0(vpb_to_add(2,b),:,:)))))/8);
+                        end
+                        vpb(bb,:,:) = vpb0(vpb_to_add(2,b),:,:) .* vaf;
+                    end
                 end
             end
         end
@@ -183,19 +200,34 @@ if Nbvt
         else
             q = randi(100);
         end
-        switch realVAon
-            case 0
-                fitCoeff = DATAventricularCoefficients(k).fitCoeff;
-                fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
-                fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
-                vpb0 = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
-                vpb_R = DATAventricularCoefficients(k).R;
-            case 1
-                vpb0 = DATAventricularReal(k).qrst;
-                vpb_R = DATAventricularReal(k).R;
-        end
-        for k = 1:Nbvt
-            vpb(k,:,:) = squeeze(vpb0(q,:,:)) .* vaf;
+        if (realVPBon)&&(realVAon)
+            % real VPBs are 600ms long and must be put in 800ms long
+            % arrays
+            vpb0 = DATAventricularReal(k).qrst;
+            vpb_R = DATAventricularReal(k).R;
+            for k = 1:Nbvt
+                % amplitude factor
+                vaf = pf * (sum(sum(abs(squeeze(pqrst([1,2,7:12],1,:)))))/8)/(sum(sum(abs(squeeze(vpb0(q,:,:)))))/8);
+                for l=1:8
+                    vpb_temp = squeeze(vpb0(q,l,:));
+                    lf1 = vpb_temp(1)*(1./(1+exp(((100:-1:1)-50)/9)));
+                    lf2 = vpb_temp(end)*(1./(1+exp(((1:100)-50)/9)));
+                    vpb(k,l,:) = ([lf1,vpb_temp',lf2]) .* vaf;
+                end
+            end
+        else
+            fitCoeff = DATAventricularCoefficients(k).fitCoeff;
+            fitCoeff(:,:,6+1) = fitCoeff(:,:,6+1)*(1+W);
+            fitCoeff(:,:,10+6) = round(fitCoeff(:,:,10+6)*(1+W));
+            vpb0 = simECG_generate_XYZ_ventricular_VA(fitCoeff,DATAventricularCoefficients(k).J);
+            vpb_R = DATAventricularCoefficients(k).R;
+            for k = 1:Nbvt
+                % amplitude factor
+                if realVAon
+                    vaf = pf * (sum(sum(abs(squeeze(pqrst([1,2,7:12],1,:)))))/8)/(sum(sum(abs(squeeze(vpb0(q,:,:)))))/8);
+                end
+                vpb(k,:,:) = squeeze(vpb0(q,:,:)) .* vaf;
+            end
         end
     end
     vpb_15l = zeros(Nbvt,15,Lv);
@@ -224,13 +256,19 @@ for lead = 1:numLeads %% Changed in v012020
     nVPB = 0;
     kv_history = ones(1,Nbvt);
     
-    % extracting fiducial points location
-    Qind = data.Qind; Rind0 = data.Rind - data.Qind;
-    Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
+    % for normal beats with real activity, the P wave is already included in the beat
+    if (realVAon == 1)&&((targets_beats(1)==1)||(targets_beats(1)==3))
+        Qind = data.Qind; Rind0 = data.Rind;
+        Sind = data.Sind; Tind = data.Tind;
+        QRSTtempNext = squeeze(pqrst(lead,ks+1,1:end));
+    else
+        Qind = data.Qind; Rind0 = data.Rind - data.Qind;
+        Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
+        QRSTtempNext = squeeze(pqrst(lead,ks+1,Qind+1:end));
+    end
     % preparing first beat
     if targets_beats(1)~=4
         % first beat is supraventricular
-        QRSTtempNext = pqrst(lead,1,Qind+1:end);
         QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
     else
         % first beat is ventricular
@@ -241,7 +279,15 @@ for lead = 1:numLeads %% Changed in v012020
         QRSTtemp = QRSTtempNext;
         if (beatNr < rrLength)
             if targets_beats(beatNr+1)~=4
-                QRSTtempNext = pqrst(lead,ks+1,Qind+1:end);
+                if (realVAon == 1)&&((targets_beats(beatNr+1)==1)||(targets_beats(beatNr+1)==3))%&&(targets_beats(beatNr+1)~=2)
+                    Qind = data.Qind; Rind0 = data.Rind;
+                    Sind = data.Sind; Tind = data.Tind;
+                    QRSTtempNext = squeeze(pqrst(lead,ks+1,1:end));
+                else
+                    Qind = data.Qind; Rind0 = data.Rind - data.Qind;
+                    Sind = data.Sind - data.Qind; Tind = data.Tind - data.Qind;
+                    QRSTtempNext = squeeze(pqrst(lead,ks+1,Qind+1:end));
+                end
                 QRSTtempNext = simECG_correct_baseline(QRSTtempNext);
             else
                 % ventricular beat
@@ -256,42 +302,26 @@ for lead = 1:numLeads %% Changed in v012020
             % R wave fiducial point is selected
             Rind = Rind0;
             % Divide PQRST into two parts
-            QRST_PS = QRSTtemp(1,1:Sind); % The PQRS part
-            QRST_ST = QRSTtemp(1,Sind+1:Tind); % The ST part
+            QRST_PS = QRSTtemp(1:Sind); % The PQRS part
+            QRST_ST = QRSTtemp(Sind+1:Tind); % The ST part
             % Resample T wave according to current RR interval
             % Signal is prolonged in order to avoid boundary effects of resampling
-            QRST_ST  = [QRST_ST(1,1)*ones(1,10) QRST_ST QRST_ST(1,end)*ones(1,10)];
-            % QRSTtemp  = [QRSTtemp(1,1)*ones(1,20) QRSTtemp QRSTtemp(1,end)*ones(1,20)]; %added by Alba
             
             % Alba: Hyperbolic model QT/RR regression
             ST_length = qt_hyper(beatNr);
-            % Original version by Andrius:
-            % Gradual prolongation of T wave after AF is terminated
-            %if (targets_beats(beatNr) == 1)||(targets_beats(beatNr) == 3)
-            %    if AFend == 1
-            %        ST_length = round(length(QRST_ST)*sqrt((0.3+m*0.1)*rr(beatNr)/1000));
-            %        m = m + 1;
-            %        if m == 7
-            %            AFend = 0;
-            %        end
-            %    else
-            %        ST_length = round(length(QRST_ST)*sqrt(rr(beatNr)/1000));
-            %    end
-            %else
-            %    ST_length = round(length(QRST_ST)*sqrt(0.35));
-            %    % Alba: Bazzet's refers to the whole QT interval
-            %    %  ST_length = round(QTc*sqrt(rr(beatNr)/1000));
-            %    AFend = 1;
-            %    m = 1;
-            %end
-            %QRST_ST = resample(QRST_ST, ST_length+round(20*sqrt(rr(beatNr)/1000))-length(QRST_PS), length(QRST_ST));  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR) %Bazzet's
-            border = round(10*(ST_length-length(QRST_PS))/(length(QRST_ST)-20));
-            QRST_ST = resample(QRST_ST, ST_length-length(QRST_PS), length(QRST_ST)-20);  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR)
-            QRSTc = [QRST_PS QRST_ST(border:end-border)]; % Alba: adapted QRST
-            %QRSTc = QRST_ST(round(20*sqrt(rr(beatNr)/1000))+1:end-round(20*sqrt(rr(beatNr)/1000))); %Alba: it is not the QTc but the original QT interva before correction
+            if (realVAon == 1)
+                QRST_ST  = [QRST_ST(1,1)*ones(1,20) QRST_ST QRST_ST(1,end)*ones(1,20)];
+                QRST_ST = resample(QRST_ST, ST_length+40, length(QRST_ST));  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR)
+                QRSTc = [QRST_PS QRST_ST(21:end-20)]; % Corrected PQRST
+                TQlength = rr(beatNr+1) - length(QRSTc);
+            else
+                QRST_ST  = [QRST_ST(1,1)*ones(1,10) QRST_ST QRST_ST(1,end)*ones(1,10)];
+                QRST_ST = resample(QRST_ST, ST_length-length(QRST_PS), length(QRST_ST)-20);  % T wave length correction QT = QTc*sqrt(RR) ~ T = Tc*sqrt(RR)
+                border = round(10*(ST_length-length(QRST_PS))/(length(QRST_ST)-20));
+                QRSTc = [QRST_PS QRST_ST(border:end-border)]; % Alba: adapted QRST
+                TQlength = rr(beatNr+1) - length(QRSTc);
+            end
             
-            % Find TQ length
-            TQlength = rr(beatNr+1) - length(QRSTc);
             % Interpolate TQ interval only if the space between beats
             % is enough
             if  TQlength >= 2
@@ -395,12 +425,15 @@ Zr = [5 5 5]; % Maximum angular variation around X,Y,Z axis
 
 switch realVAon %%
     case 0
-        %CPerez 05/2022
-        %Include respiration
-        [Q] = simECG_rotation_angles_XYZ_v2( simECGdata.Fr, T, Fs, Zr);
-        
-        for t = 1 : ecgLength
-            pqrstResampled(:,t) = Q(:,:,t)*pqrstResampled(:,t);
+        % check whether simulated or real RR intervals have been used
+        if ~isempty(simECGdata.Fr)
+            %CPerez 05/2022
+            %Include respiration
+            [Q] = simECG_rotation_angles_XYZ_v2( simECGdata.Fr, T, Fs, Zr);
+            
+            for t = 1 : ecgLength
+                pqrstResampled(:,t) = Q(:,:,t)*pqrstResampled(:,t);
+            end
         end
         
         % Dower Transformation for synthetic PQRST complexes

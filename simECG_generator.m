@@ -24,7 +24,7 @@ function [simECGdata, initialParameters, annotations] = simECG_generator(sigLeng
 % noiseType - an array containing the desired types of noise (eg [3, 6,
 % 8]).
 % noiseRms - the desired root mean square level of each desired noise type.
-% onlyRR 1 - 0 for multilead ECG simulation, 1 for RR series-only
+% onlyRR - 0 for multilead ECG simulation, 1 for RR series-only
 % simulation.
 % arrhythmiaParameters - struct of arrhythmia simulation parameters defined
 % in the main script.

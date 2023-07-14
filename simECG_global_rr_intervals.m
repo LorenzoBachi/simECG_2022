@@ -109,7 +109,7 @@ switch rhythmType  % 0 - regular ECG, 1 - stress ECG
         srLength = rrLength;
         if realRRon == 1 % Use real RR series
             rr_sr = simECG_get_real_RR_intervals(0, srLength); % sinus rhythm rr series (real)
-            hrArray = (1./diff(rr_sr))*60 ;
+            hrArray = (1./rr_sr)*60 ;
         else % Use simulated RR series
             [rr_sr,hrArray,simECGdata] = simECG_generate_sinus_rhythm(srLength,simECGdata); % sinus rhythm rr series
             %sigLength = ceil(simECGdata.Duration);
@@ -118,7 +118,7 @@ switch rhythmType  % 0 - regular ECG, 1 - stress ECG
         
         % Generate atrial fibrillation pacing activity
         if B_af > 0
-            afLength = round(2*sigLength*B_af);
+            afLength = round(2.5*sigLength*B_af);
             if realRRon == 1 % Use real RR series
                 rr_af = simECG_get_real_RR_intervals(1, afLength);  %atrial fibrillation rr series
             else
@@ -251,8 +251,16 @@ end
 % splitting VPB burden
 % B_vpb_at and B_vpb_af must be constrained in order to avoid too many
 % transitions to AT or AF which would break the burden constraint
-B_vpb_at = 0; %min(B_vpb * B_at * B, ((0.5*B_at*d_vpb_at)/(d_at)));
-B_vpb_af = min(B_vpb * B_af * B, ((0.5*B_af*d_vpb_af)/(d_af)));
+if (arrhythmiaParameters.vpbs_in_at == 1)
+    B_vpb_at = min(B_vpb * B_at * B, ((0.5*B_at*d_vpb_at)/(d_at)));
+else
+    B_vpb_at = 0;
+end
+if (arrhythmiaParameters.vpbs_in_af == 1)
+    B_vpb_af = min(B_vpb * B_af * B, ((0.5*B_af*d_vpb_af)/(d_af)));
+else
+    B_vpb_af = 0;
+end
 B_vpb_sr = B_vpb - B_vpb_at - B_vpb_af;
 % contribution to n_sr from the AT branch of the Markov chain
 n1 = ( ( ( d_vpb_at * B_at * T ) - ( d_at * B_vpb_at * T ) ) / ( d_vpb_at * d_at * d_RR_at ) );
@@ -441,8 +449,16 @@ while t<=sigLengthMs
                 k = k + 1;
                 % memorize state
                 state_history(k) = s;
-                % avoid too large RR intervals in AF
-                while rr_af(c_AF)>1.8
+                % occasionally, AF episodes run very long
+                if c_AF>length(rr_af)
+                    if realRRon == 1
+                        rr_af = [rr_af,simECG_get_real_RR_intervals(1, afLength)];
+                    else
+                        rr_af = [rr_af,simECG_generate_AF_intervals(fibFreqz,afLength)'];
+                    end
+                end
+                % avoid too large RR intervals in simulated AF
+                while (rr_af(c_AF)>1.8)&&(realRRon == 0)
                     c_AF = c_AF + 1;
                 end
                 % insert af beat from Corino's AV model

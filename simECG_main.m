@@ -42,19 +42,19 @@ clear; clc;
 
 %% General Parameters
 sigLength = 5*60;   %desired ECG length in seconds;
-onlyRR = 0;         % 1 - only RR intervals are generated, 0 - multilead ECG is generated
-realRRon = 0;       % 1 - real RR series are used, 0 - synthetic
-realVAon = 0;       % 1 - real ventricular activity is used, 0 - synthetic
-realAAon = 0;       % 1 - real atrial activity is used, 0 - synthetic
-simECGdata.fs = 1000; %sampling frequency
+onlyRR = 0;         % 0 for multilead ECG simulation, 1 for RR series-only simulation.
+realRRon = 0;       % 0 for simulated RR intervals, 1 for real RR intervals.
+realVAon = 0;       % 0 for simulated ventricular activity, 1 for real ventricular activity.
+realVPBon = 0;      % 0 for always simulate synthetic ventricular premature beats, 1 for real VPBs from the INCART database (only with realVAon = 1)
+realAAon = 0;       % 0 for simulated atrial activity, 1 for real atrial activity.
 
 %% Atrial Fibrillation
-B_af = 0;           % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
+B_af = 0;         % AF burden. 0 - the entire signal is SR, 1 - the entire signal is AF
 d_af = 100;         % Median episode length > in beats <
-% default from the MIt-BIH Arrhythmia and Atrial Fibrillation Database: 85
+% default from the MIt-BIH Arrhythmia and Atrial Fibrillation Database: d_af = 85
 
 %% Atrial Tachycardia
-B_at = 0;     % AT burden
+B_at = 0;         % AT burden
 load('ATDist.mat');
 %ATDist = sqrt(ATDist); ATDist = ATDist.^(1/4); %ATDist = ones(1,50); %ATDist = zeros(1,50); ATDist(1) = 1;
 % ATDist represents the desired distribution of the atrial tachycardia episodes,
@@ -65,19 +65,21 @@ load('ATDist.mat');
 % The maximum length of ATDist represents the maximum desidred length of an
 % atrial tachycardia episode (default: 50)
 at_x = 1:50;
-apb_p = [0.3,0.3,0.3,0]; %[0.3,0.3,0.3,0.1]; % probability of the four APB classes
+apb_p = [0.33,0.33,0.33,0]; % probability of the four APB classes
 
 %% Bigeminy, Trigeminy
-B_bt = 0;           % Bigeminy and trigeminy burden
-p_bt = [0.5, 0.5];  % differential probability of bigeminy vs trigeminy
-% default: [0.72, 1-0.72]
+B_bt = 0;         % Bigeminy and trigeminy burden
 d_bt = 8;           % Median episode length (in beats) for bigeminy and trigeminy
-% default from the MIt-BIH Arrhythmia Database: 8
+% default from the MIt-BIH Arrhythmia Database: d_bt = 8
+p_bt = [0.5, 0.5];  % differential probability of bigeminy vs trigeminy
+% default from the MIt-BIH Arrhythmia Database: p_bt = [0.72, 1-0.72]
 
 %% Ventricular Premature Beats
-B_vpb = 0;          % VPB burden
+B_vpb = 0;        % VPB burden
 vpb_p = [0.5,0.5,0];%[0.475,0.475,0.05]; % probability of the three VPB classes (SR only)
 multiform_vpbs = 0; % if this setting is different from 0, different shapes of VPBs may be used in the same record
+vpbs_in_at = 0;     % 0 to avoid VPBs in AT episodes, 1 to allow VPBs to be placed in AT episodes (with B_at > 0)
+vpbs_in_af = 1;     % 0 to avoid VPBs in AF episdoes, 1 to allow VPBs to be placed in AF episodes (with B_af > 0)
 
 %% Noise Parameters
 % Type of noise, a vector with the codes of all types of desired noise:
@@ -90,7 +92,7 @@ multiform_vpbs = 0; % if this setting is different from 0, different shapes of V
 % 6 - Simulated muscular noise %CPerez 07/2022
 % 7 - Real exercise stress test noise (from R. Bailón)
 % 8 - Motion artifacts
-noiseType = [3,           6,        8];
+noiseType = [3,           6,       8];
 % Noise level in millivolts, a vector with each RMS level according to the
 % selected noise sources
 noiseRMS =  [0.15,      0.01,      2]; 
@@ -125,10 +127,10 @@ end
 %% Amplitude scaling
 % WARNING: This feature is still in development. Use with caution! This
 % amplitude factor only works for simulated ventricular and atrial
-% activity.
+% activity only.
 ecg_amp = rand*10; %ECG signal amplitude scaling factor, a real number. Default is rand*10, minimum is zero
 
-%% ECG Generator
+%% Struct definition
 arrhythmiaParameters.B_af = B_af;
 arrhythmiaParameters.d_af = d_af;
 arrhythmiaParameters.B_at = B_at;
@@ -140,8 +142,14 @@ arrhythmiaParameters.vpb_p = vpb_p;
 arrhythmiaParameters.B_bt = B_bt;
 arrhythmiaParameters.p_bt = p_bt./(sum(p_bt)+eps);
 arrhythmiaParameters.d_bt = d_bt;
+arrhythmiaParameters.vpbs_in_at = vpbs_in_at;
+arrhythmiaParameters.vpbs_in_af = vpbs_in_af;
 simECGdata.ecg_amp = ecg_amp;
 simECGdata.multiform_vpbs = multiform_vpbs;
+simECGdata.fs = 1000; %sampling frequency
+simECGdata.realVPBon = realVPBon;
+
+%% ECG Generation
 
 for nr = 1:1
     
@@ -165,6 +173,7 @@ targets_beats = simECGdata.targets_beats;    % Marks sinus rhythm, AF, premature
 ecgLength = simECGdata.ecgLength;            % ECG length in samples
 state_history = simECGdata.state_history;
 
+if onlyRR==0
 %% Plots
 lead = 2;
 
@@ -219,7 +228,7 @@ yticks([1,2,3,4]); yticklabels({'N','AF','APB','V'});
 xlim([0,sigLength]);
 set(gcf, 'Position', get(0, 'Screensize'));
 
-%% 12 lead plot
+% 12 lead plot
 spacing = 3;
 if ishandle(3), close(3); end
 figure(3);
@@ -245,7 +254,7 @@ box on;
 
 linkaxes(ax2,'x');
 set(gcf, 'Position', get(0, 'Screensize'));
-
+end
 
 
 

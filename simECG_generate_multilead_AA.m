@@ -115,9 +115,7 @@ switch rhythmType
                    %                end
                end
            end
-       end   
-       
-       
+       end
        
     case 1 % Entire signal is AF
         if realAAon == 0
@@ -223,7 +221,7 @@ switch rhythmType
                end
            end
                
-        else % Real atrial activity is prefered
+        else % Real atrial activity is preferred
             sigNum = randi([1 20]);
             load('DATA_f_waves_real')
             f_waves = DATAfWaves(sigNum).f_waves;
@@ -244,16 +242,13 @@ switch rhythmType
             for p_num = 2:Nrr
                 if (targets_beats(p_num) == 2) ||...
                        ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2)) ||...
-                       ((targets_beats(p_num) == 4)&&(targets_beats(p_num+1) == 2))
+                       ((targets_beats(p_num) == 4)&&(targets_beats(min(p_num+1,Nrr)) == 2))
                     praIndex = QRSindex(p_num);
                     while ( (targets_beats(p_num) == 2) ||...
                        ((targets_beats(p_num) == 4)&&(targets_beats(p_num-1) == 2)) ||...
                        ((targets_beats(p_num) == 4)&&(targets_beats(p_num+1) == 2)) ) && ( p_num < Nrr )
                         p_num = p_num + 1;
                     end 
-                    if p_num>length(QRSindex)
-                        temp=1;
-                    end
                     pabIndex = QRSindex(p_num);
                     multileadAA(:, praIndex:pabIndex) = multileadfWaves(:,praIndex:pabIndex);
                 end

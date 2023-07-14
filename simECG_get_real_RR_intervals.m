@@ -1,4 +1,4 @@
-function [rr, ESTpeak, fa, ecgnr] = simECG_get_real_RR_intervals(AFrhythm, rrLength)
+function [rr, ESTpeak, fa, ecgnr] = simECG_get_real_RR_intervals(rhythm, rrLength)
 % [] = simECG_get_real_RR_intervals() returns a RR interval series
 % constructed using real RR intevals obtained from the MIT-BIH Normal Sinus
 % Rhythm database (SR) and the Long Term Atrial Fibrillation database (AF).
@@ -7,7 +7,7 @@ function [rr, ESTpeak, fa, ecgnr] = simECG_get_real_RR_intervals(AFrhythm, rrLen
 % Stress Test database (Normal Sinus Rhythm). %Cris 03/2022
 %
 % Input arguments:
-% AFrhythm - type of rhythm: 0 for sinus rhythm, 1 for atrial fibrillation,
+% rhythm - type of rhythm: 0 for sinus rhythm, 1 for atrial fibrillation,
 % 2 for stress test ECG.
 % rrLength - number of desired real RR intervals
 %
@@ -20,7 +20,7 @@ function [rr, ESTpeak, fa, ecgnr] = simECG_get_real_RR_intervals(AFrhythm, rrLen
 % https://www.gnu.org/licenses/gpl-3.0.html
 
 ESTpeak = 0; fa = 0; ecgnr = 0;
-switch AFrhythm 
+switch rhythm 
     case 0 % sinus rhythm
         sigNum = randi([1 18]);  % Select randomly a single SR RR signal from 18 possible
         load('DATA_RR_SR_real');
