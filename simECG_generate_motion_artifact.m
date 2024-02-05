@@ -37,7 +37,7 @@ simuMA = bernogauss_conv;
     simuMA_VCG = leadcalc(simuMA_8,'synt');
     
     simuMA_15 = vertcat(simuMA_8(7,:),simuMA_8(8,:),simuMA_12(12,:),...
-        -simuMA_12(9,:),-simuMA_12(7,:),simuMA_12(11,:),simuMA_8(1:6,:),simuMA_VCG);
+        -simuMA_12(9,:),simuMA_12(7,:),simuMA_12(11,:),simuMA_8(1:6,:),simuMA_VCG);
     
     simuMA = simuMA_15;
 % end
