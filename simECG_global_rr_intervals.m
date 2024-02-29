@@ -123,7 +123,6 @@ switch rhythmType  % 0 - regular ECG, 1 - stress ECG
                 rr_af = simECG_get_real_RR_intervals(1, afLength);  %atrial fibrillation rr series
             else
                 rr_af = simECG_generate_AF_intervals(fibFreqz,afLength); %atrial fibrillation rr series
-                rr_af = rr_af(1:afLength);
             end
         end
         
