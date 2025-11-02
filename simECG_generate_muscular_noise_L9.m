@@ -129,7 +129,7 @@ simuMN = simuMN(:,1:ecgLength).*1e-3; %in mV ->9-standard leads
 
 % Rescale to the desired user RMS
 for iiL = 1:size(simuMN,1)
-    simuMN(iiL,:) = noiseRMS(1,iiL)*(simuMN(iiL,:)/std(simuMN(iiL,1:60*simECGdata.fs)));
+    simuMN(iiL,:) = noiseRMS(1,iiL)*(simuMN(iiL,:)/std(simuMN(iiL,:)));
 end
 
 % Transform to the 15 leads
